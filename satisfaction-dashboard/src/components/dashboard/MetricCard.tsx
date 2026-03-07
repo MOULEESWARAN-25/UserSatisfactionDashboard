@@ -91,13 +91,13 @@ export function MetricCard({
             </div>
             <motion.div
               className={cn(
-                "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted transition-colors group-hover:bg-primary/10",
+                "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-muted/80 dark:bg-muted transition-colors group-hover:bg-primary/10 dark:group-hover:bg-primary/20",
                 iconColor
               )}
               whileHover={{ scale: 1.1, rotate: 5 }}
               transition={{ duration: 0.2 }}
             >
-              <Icon className="h-5 w-5" />
+              <Icon className="h-5 w-5 text-foreground/80 dark:text-foreground" />
             </motion.div>
           </div>
         </CardContent>

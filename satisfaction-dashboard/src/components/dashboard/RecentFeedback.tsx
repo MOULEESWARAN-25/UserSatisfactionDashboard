@@ -71,8 +71,8 @@ export function RecentFeedback({ feedback, index = 0 }: RecentFeedbackProps) {
           </CardTitle>
           <CardDescription>Latest submissions across services</CardDescription>
         </div>
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
-          <MessageSquare className="h-4 w-4 text-muted-foreground" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted dark:bg-muted/80">
+          <MessageSquare className="h-4 w-4 text-muted-foreground dark:text-foreground/70" />
         </div>
       </CardHeader>
       <CardContent className="p-0">

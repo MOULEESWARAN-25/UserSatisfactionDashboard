@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { GraduationCap, ShieldCheck, ArrowRight, PanelLeft } from "lucide-react";
+import { GraduationCap, ShieldCheck, ArrowRight, PanelLeft, Loader2, Info } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,8 +22,9 @@ export default function LoginPage() {
   const { login, isAuthenticated, user } = useAuth();
   const [selectedRole, setSelectedRole] = useState<UserRole | null>(null);
   const [userId, setUserId] = useState("");
-  const [userName, setUserName] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   // Redirect if already logged in
   if (isAuthenticated && user) {
@@ -33,7 +34,7 @@ export default function LoginPage() {
     return null;
   }
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!selectedRole) {
       setError("Please select a role");
       return;
@@ -46,18 +47,52 @@ export default function LoginPage() {
       );
       return;
     }
-    if (!userName.trim()) {
-      setError("Please enter your name");
+    if (!password.trim()) {
+      setError("Please enter your password");
       return;
     }
 
-    login(userId.trim(), userName.trim(), selectedRole);
+    setIsLoading(true);
+    setError("");
 
-    // Redirect based on role
-    if (selectedRole === "student") {
-      router.push("/feedback/submit");
-    } else {
-      router.push("/dashboard");
+    try {
+      const response = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "login",
+          userId: userId.trim(),
+          password: password.trim(),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        setError(data.error || "Login failed. Please check your credentials.");
+        setIsLoading(false);
+        return;
+      }
+
+      // Verify role matches
+      if (data.user.role !== selectedRole) {
+        setError(`This account is registered as ${data.user.role}, not ${selectedRole}`);
+        setIsLoading(false);
+        return;
+      }
+
+      // Use the auth context login
+      login(data.user.userId, data.user.name, data.user.role);
+
+      // Redirect based on role
+      if (selectedRole === "student") {
+        router.push("/feedback/submit");
+      } else {
+        router.push("/dashboard");
+      }
+    } catch {
+      setError("Connection error. Please try again.");
+      setIsLoading(false);
     }
   };
 
@@ -85,6 +120,8 @@ export default function LoginPage() {
             type="button"
             onClick={() => {
               setSelectedRole("student");
+              setUserId("STU2024001");
+              setPassword("student123");
               setError("");
             }}
             className={cn(
@@ -119,6 +156,8 @@ export default function LoginPage() {
             type="button"
             onClick={() => {
               setSelectedRole("admin");
+              setUserId("ADMIN001");
+              setPassword("admin123");
               setError("");
             }}
             className={cn(
@@ -164,6 +203,20 @@ export default function LoginPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 pt-6">
+              {/* Default Credentials Hint */}
+              <div className="flex items-start gap-2 rounded-lg bg-blue-500/10 p-3 text-sm">
+                <Info className="h-4 w-4 mt-0.5 text-blue-500 shrink-0" />
+                <div className="text-muted-foreground">
+                  <span className="font-medium text-foreground">Default credentials:</span>
+                  <br />
+                  {selectedRole === "admin" ? (
+                    <>Admin ID: <code className="bg-muted px-1 rounded">ADMIN001</code> / Password: <code className="bg-muted px-1 rounded">admin123</code></>
+                  ) : (
+                    <>Student ID: <code className="bg-muted px-1 rounded">STU2024001</code> / Password: <code className="bg-muted px-1 rounded">student123</code></>
+                  )}
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="userId">
                   {selectedRole === "student" ? "Student ID" : "Admin ID"}
@@ -174,7 +227,7 @@ export default function LoginPage() {
                   placeholder={
                     selectedRole === "student"
                       ? "e.g., STU2024001"
-                      : "e.g., ADM001"
+                      : "e.g., ADMIN001"
                   }
                   value={userId}
                   onChange={(e) => {
@@ -184,15 +237,21 @@ export default function LoginPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="userName">Full Name</Label>
+                <Label htmlFor="password">Password</Label>
                 <Input
-                  id="userName"
+                  id="password"
+                  type="password"
                   className="h-11 rounded-xl"
-                  placeholder="Enter your full name"
-                  value={userName}
+                  placeholder="Enter your password"
+                  value={password}
                   onChange={(e) => {
-                    setUserName(e.target.value);
+                    setPassword(e.target.value);
                     setError("");
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleLogin();
+                    }
                   }}
                 />
               </div>
@@ -201,10 +260,20 @@ export default function LoginPage() {
 
               <Button
                 onClick={handleLogin}
+                disabled={isLoading}
                 className="h-11 w-full gap-2 rounded-xl"
               >
-                Continue
-                <ArrowRight className="h-4 w-4" />
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  <>
+                    Sign In
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
               </Button>
             </CardContent>
           </Card>

@@ -187,7 +187,11 @@ export async function GET(req: NextRequest) {
       serviceBreakdown,
     });
   } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    console.error("Analytics API Error:", err);
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json(
+      { error: "Failed to fetch analytics data", details: errorMessage },
+      { status: 500 }
+    );
   }
 }

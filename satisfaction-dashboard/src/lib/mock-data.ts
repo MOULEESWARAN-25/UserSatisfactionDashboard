@@ -1,4 +1,4 @@
-import type { AnalyticsDashboard } from "@/types/analytics";
+import type { AnalyticsDashboard, AdvancedAnalytics } from "@/types/analytics";
 import type { FeedbackRecord } from "@/types/feedback";
 
 // Generate dates for the last 14 days
@@ -218,5 +218,92 @@ export const MOCK_FEEDBACK: FeedbackRecord[] = [
   },
 ];
 
-// Flag to use mock data (set to true for development without MongoDB)
-export const USE_MOCK_DATA = true;
+// Advanced Analytics Mock Data
+export const MOCK_ADVANCED_ANALYTICS: AdvancedAnalytics = {
+  peakHours: [
+    { hour: 8, label: "8AM", count: 12 },
+    { hour: 9, label: "9AM", count: 28 },
+    { hour: 10, label: "10AM", count: 45 },
+    { hour: 11, label: "11AM", count: 52 },
+    { hour: 12, label: "12PM", count: 38 },
+    { hour: 13, label: "1PM", count: 32 },
+    { hour: 14, label: "2PM", count: 48 },
+    { hour: 15, label: "3PM", count: 55 },
+    { hour: 16, label: "4PM", count: 42 },
+    { hour: 17, label: "5PM", count: 35 },
+    { hour: 18, label: "6PM", count: 25 },
+    { hour: 19, label: "7PM", count: 18 },
+  ],
+  sentiment: {
+    positive: 792,
+    neutral: 312,
+    negative: 143,
+  },
+  monthlyComparison: [
+    { month: "Jan", thisYear: 85, lastYear: 72 },
+    { month: "Feb", thisYear: 92, lastYear: 78 },
+    { month: "Mar", thisYear: 108, lastYear: 95 },
+    { month: "Apr", thisYear: 124, lastYear: 88 },
+    { month: "May", thisYear: 156, lastYear: 112 },
+    { month: "Jun", thisYear: 142, lastYear: 98 },
+  ],
+  serviceDetails: [
+    {
+      serviceId: "cafeteria",
+      serviceName: "Cafeteria",
+      responseRate: 78,
+      avgResponseTime: 2.3,
+      questionRatings: [
+        { questionId: "food_quality", questionLabel: "Food Quality", avgRating: 4.2, responseCount: 312 },
+        { questionId: "hygiene", questionLabel: "Hygiene", avgRating: 4.5, responseCount: 298 },
+        { questionId: "staff_behavior", questionLabel: "Staff Behavior", avgRating: 4.0, responseCount: 285 },
+      ],
+    },
+    {
+      serviceId: "library",
+      serviceName: "Library",
+      responseRate: 82,
+      avgResponseTime: 1.8,
+      questionRatings: [
+        { questionId: "book_availability", questionLabel: "Book Availability", avgRating: 4.6, responseCount: 289 },
+        { questionId: "quietness", questionLabel: "Quietness", avgRating: 4.8, responseCount: 276 },
+        { questionId: "seating_space", questionLabel: "Seating Space", avgRating: 4.3, responseCount: 265 },
+      ],
+    },
+  ],
+  topIssues: [
+    "WiFi connectivity in hostel areas",
+    "Online course platform stability",
+    "Cafeteria pricing concerns",
+    "Library seating during exam periods",
+    "Event communication timing",
+  ],
+  improvementAreas: [
+    { area: "WiFi Connectivity", score: 2.8, change: -0.3 },
+    { area: "Platform Stability", score: 3.2, change: 0.2 },
+    { area: "Food Pricing", score: 3.4, change: -0.1 },
+    { area: "Maintenance Response", score: 3.5, change: 0.4 },
+    { area: "Seating Availability", score: 3.8, change: 0.1 },
+    { area: "Event Communication", score: 4.0, change: 0.5 },
+  ],
+};
+
+// Flag to use mock data (set to false to use MongoDB)
+// Set this to false when MongoDB is connected and you want real data
+export const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA !== 'false';
+
+// Default users for easy testing
+export const DEFAULT_USERS = {
+  admin: {
+    id: "ADMIN001",
+    name: "Campus Admin",
+    password: "admin123",
+    role: "admin" as const,
+  },
+  student: {
+    id: "STU2024001",
+    name: "John Student",
+    password: "student123",
+    role: "student" as const,
+  },
+};

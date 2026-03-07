@@ -42,8 +42,12 @@ export async function POST(req: NextRequest) {
     const doc = await Feedback.create(body);
     return NextResponse.json({ success: true, id: doc._id }, { status: 201 });
   } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    console.error("Feedback POST Error:", err);
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json(
+      { error: "Failed to submit feedback", details: errorMessage },
+      { status: 500 }
+    );
   }
 }
 
@@ -75,7 +79,11 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ feedback: docs });
   } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+    console.error("Feedback GET Error:", err);
+    const errorMessage = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json(
+      { error: "Failed to fetch feedback", details: errorMessage },
+      { status: 500 }
+    );
   }
 }
