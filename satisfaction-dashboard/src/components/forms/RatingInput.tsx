@@ -11,42 +11,51 @@ interface RatingInputProps {
   required?: boolean;
 }
 
-export function RatingInput({ value, onChange, label, required }: RatingInputProps) {
+export function RatingInput({
+  value,
+  onChange,
+  label,
+  required,
+}: RatingInputProps) {
   const [hovered, setHovered] = useState(0);
 
   return (
-    <div className="flex items-center justify-between py-2">
+    <div className="flex items-center justify-between py-3">
       <label className="text-sm font-medium">
         {label}
-        {required && <span className="text-destructive ml-0.5">*</span>}
+        {required && <span className="ml-0.5 text-destructive">*</span>}
       </label>
-      <div className="flex items-center gap-0.5">
+      <div className="flex items-center gap-1">
         {[1, 2, 3, 4, 5].map((star) => {
           const active = star <= (hovered || value);
           return (
             <button
               key={star}
               type="button"
-              className="p-0.5 transition-transform hover:scale-110 focus:outline-none"
+              className="rounded-md p-1 transition-all hover:scale-110 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:hover:bg-amber-950"
               onMouseEnter={() => setHovered(star)}
               onMouseLeave={() => setHovered(0)}
               onClick={() => onChange(star)}
             >
               <Star
-                size={20}
                 className={cn(
-                  "transition-colors",
-                  active ? "fill-yellow-400 text-yellow-400" : "fill-none text-muted-foreground/40"
+                  "h-5 w-5 transition-colors",
+                  active
+                    ? "fill-amber-400 text-amber-400"
+                    : "fill-transparent text-muted-foreground/30"
                 )}
               />
             </button>
           );
         })}
-        {value > 0 && (
-          <span className="ml-2 text-xs font-medium text-muted-foreground w-4 tabular-nums">
-            {value}/5
-          </span>
-        )}
+        <span
+          className={cn(
+            "ml-2 w-6 text-center text-xs font-semibold tabular-nums",
+            value > 0 ? "text-foreground" : "text-muted-foreground"
+          )}
+        >
+          {value > 0 ? value : "-"}
+        </span>
       </div>
     </div>
   );

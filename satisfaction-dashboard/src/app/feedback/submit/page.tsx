@@ -1,15 +1,18 @@
+"use client";
+
 import { AppShell } from "@/components/layout/AppShell";
 import { FeedbackForm } from "@/components/forms/FeedbackForm";
+import { StudentOnly } from "@/components/auth/ProtectedRoute";
 
 export default function SubmitFeedbackPage() {
   return (
-    <AppShell
-      title="Submit Feedback"
-      description="Rate a campus service and share your experience"
-    >
-      <div className="max-w-xl mx-auto">
+    <StudentOnly>
+      <AppShell
+        title="Submit Feedback"
+        description="Rate a campus service and share your experience"
+      >
         <FeedbackForm />
-      </div>
-    </AppShell>
+      </AppShell>
+    </StudentOnly>
   );
 }

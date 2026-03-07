@@ -1,23 +1,38 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  LayoutDashboard, MessageSquare, Grid3x3,
-  BarChart3, FileText, Settings, GraduationCap,
-  ChevronLeft, ChevronRight,
+  LayoutDashboard,
+  MessageSquare,
+  Grid3x3,
+  BarChart3,
+  FileText,
+  Settings,
+  ChevronLeft,
+  ChevronRight,
+  LogOut,
+  PanelLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
+import { useAuth } from "@/lib/auth-context";
 
-const NAV_ITEMS = [
+// Admin navigation items
+const ADMIN_NAV_ITEMS = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Feedback", href: "/feedback", icon: MessageSquare },
-  { label: "Services", href: "/services", icon: Grid3x3 },
   { label: "Analytics", href: "/analytics", icon: BarChart3 },
+  { label: "Services", href: "/services", icon: Grid3x3 },
   { label: "Reports", href: "/reports", icon: FileText },
+  { label: "Feedback", href: "/feedback", icon: MessageSquare },
+];
+
+// Student navigation items
+const STUDENT_NAV_ITEMS = [
+  { label: "Submit Feedback", href: "/feedback/submit", icon: MessageSquare },
 ];
 
 const BOTTOM_ITEMS = [
@@ -26,110 +41,217 @@ const BOTTOM_ITEMS = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, logout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
 
+  const isAdmin = user?.role === "admin";
+  const isStudent = user?.role === "student";
+  const navItems = isAdmin ? ADMIN_NAV_ITEMS : isStudent ? STUDENT_NAV_ITEMS : [];
+
+  const handleLogout = () => {
+    logout();
+    router.push("/login");
+  };
+
   return (
-    <aside
-      className={cn(
-        "relative flex flex-col h-screen bg-card border-r border-border transition-all duration-200 shrink-0",
-        collapsed ? "w-16" : "w-60"
-      )}
+    <motion.aside
+      initial={false}
+      animate={{ width: collapsed ? 72 : 256 }}
+      transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+      className="relative flex h-screen flex-col border-r border-border/40 bg-card"
     >
       {/* Logo */}
-      <div className={cn(
-        "flex items-center h-14 px-4 border-b border-border shrink-0",
-        collapsed ? "justify-center" : "gap-2"
-      )}>
-        <div className="flex items-center justify-center w-7 h-7 rounded-lg bg-primary text-primary-foreground">
-          <GraduationCap size={14} />
-        </div>
-        {!collapsed && (
-          <span className="font-semibold text-sm tracking-tight">SatisfyIQ</span>
+      <div
+        className={cn(
+          "flex h-[60px] shrink-0 items-center border-b border-border/40 px-4",
+          collapsed ? "justify-center" : "gap-3"
         )}
+      >
+        <motion.div
+          className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <PanelLeft className="h-4 w-4 text-primary-foreground" />
+        </motion.div>
+        <AnimatePresence>
+          {!collapsed && (
+            <motion.div
+              className="flex flex-col"
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              <span className="text-sm font-semibold tracking-tight">
+                SatisfyIQ
+              </span>
+              <span className="text-[10px] text-muted-foreground">
+                Feedback Analytics
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
-      {/* Nav */}
-      <nav className="flex-1 py-4 px-2 space-y-0.5 overflow-y-auto">
-        {!collapsed && (
-          <p className="px-2 pb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-            Main
-          </p>
+      {/* User info */}
+      <AnimatePresence>
+        {user && !collapsed && (
+          <motion.div
+            className="border-b border-border/40 px-4 py-3"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <p className="truncate text-sm font-medium">{user.name}</p>
+            <p className="text-xs capitalize text-muted-foreground">
+              {user.role} &bull; {user.id}
+            </p>
+          </motion.div>
         )}
-        {NAV_ITEMS.map(({ label, href, icon: Icon }) => {
+      </AnimatePresence>
+
+      {/* Main navigation */}
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+        <AnimatePresence>
+          {!collapsed && (
+            <motion.p
+              className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              {isAdmin ? "Overview" : "Actions"}
+            </motion.p>
+          )}
+        </AnimatePresence>
+        {navItems.map(({ label, href, icon: Icon }, index) => {
           const active = pathname === href || pathname.startsWith(href + "/");
           return (
             <Link key={href} href={href}>
-              <div
+              <motion.div
                 className={cn(
-                  "flex items-center gap-3 rounded-md px-2 py-2 text-sm transition-colors cursor-pointer",
+                  "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                   active
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-primary text-primary-foreground shadow-sm"
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                  collapsed && "justify-center"
+                  collapsed && "justify-center px-2"
                 )}
                 title={collapsed ? label : undefined}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.2, delay: index * 0.05 }}
+                whileHover={{ x: collapsed ? 0 : 4 }}
+                whileTap={{ scale: 0.98 }}
               >
-                <Icon size={16} className="shrink-0" />
-                {!collapsed && <span>{label}</span>}
-              </div>
+                <Icon
+                  className={cn(
+                    "h-4 w-4 shrink-0",
+                    active ? "" : "group-hover:text-foreground"
+                  )}
+                />
+                <AnimatePresence>
+                  {!collapsed && (
+                    <motion.span
+                      initial={{ opacity: 0, width: 0 }}
+                      animate={{ opacity: 1, width: "auto" }}
+                      exit={{ opacity: 0, width: 0 }}
+                      transition={{ duration: 0.15 }}
+                    >
+                      {label}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </motion.div>
             </Link>
           );
         })}
-
-        <Separator className="my-3" />
-
-        {!collapsed && (
-          <p className="px-2 pb-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-            Student
-          </p>
-        )}
-        <Link href="/feedback/submit">
-          <div
-            className={cn(
-              "flex items-center gap-3 rounded-md px-2 py-2 text-sm transition-colors cursor-pointer",
-              pathname === "/feedback/submit"
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-              collapsed && "justify-center"
-            )}
-            title={collapsed ? "Submit Feedback" : undefined}
-          >
-            <MessageSquare size={16} className="shrink-0" />
-            {!collapsed && <span>Submit Feedback</span>}
-          </div>
-        </Link>
       </nav>
 
-      {/* Bottom */}
-      <div className="px-2 pb-4 space-y-0.5">
+      {/* Bottom section */}
+      <div className="mt-auto space-y-1 border-t border-border/40 px-3 py-4">
         {BOTTOM_ITEMS.map(({ label, href, icon: Icon }) => (
           <Link key={href} href={href}>
-            <div
+            <motion.div
               className={cn(
-                "flex items-center gap-3 rounded-md px-2 py-2 text-sm transition-colors cursor-pointer",
+                "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 pathname === href
-                  ? "bg-primary text-primary-foreground"
+                  ? "bg-primary text-primary-foreground shadow-sm"
                   : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                collapsed && "justify-center"
+                collapsed && "justify-center px-2"
               )}
               title={collapsed ? label : undefined}
+              whileHover={{ x: collapsed ? 0 : 4 }}
+              whileTap={{ scale: 0.98 }}
             >
-              <Icon size={16} className="shrink-0" />
-              {!collapsed && <span>{label}</span>}
-            </div>
+              <Icon className="h-4 w-4 shrink-0" />
+              <AnimatePresence>
+                {!collapsed && (
+                  <motion.span
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: "auto" }}
+                    exit={{ opacity: 0, width: 0 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    {label}
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </motion.div>
           </Link>
         ))}
+
+        {/* Logout */}
+        <motion.button
+          onClick={handleLogout}
+          className={cn(
+            "group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+            "text-muted-foreground hover:bg-destructive/10 hover:text-destructive",
+            collapsed && "justify-center px-2"
+          )}
+          title={collapsed ? "Logout" : undefined}
+          whileHover={{ x: collapsed ? 0 : 4 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <LogOut className="h-4 w-4 shrink-0" />
+          <AnimatePresence>
+            {!collapsed && (
+              <motion.span
+                initial={{ opacity: 0, width: 0 }}
+                animate={{ opacity: 1, width: "auto" }}
+                exit={{ opacity: 0, width: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                Logout
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </motion.button>
       </div>
 
       {/* Collapse toggle */}
-      <Button
-        variant="outline"
-        size="icon"
-        className="absolute -right-4 top-16 h-7 w-7 rounded-full border shadow-sm bg-background z-10"
-        onClick={() => setCollapsed(!collapsed)}
+      <motion.div
+        className="absolute -right-3.5 top-16 z-10"
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.9 }}
       >
-        {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
-      </Button>
-    </aside>
+        <Button
+          variant="outline"
+          size="icon"
+          className="h-7 w-7 rounded-full border bg-background shadow-md"
+          onClick={() => setCollapsed(!collapsed)}
+        >
+          <motion.div
+            animate={{ rotate: collapsed ? 0 : 180 }}
+            transition={{ duration: 0.3 }}
+          >
+            <ChevronRight className="h-3.5 w-3.5" />
+          </motion.div>
+        </Button>
+      </motion.div>
+    </motion.aside>
   );
 }

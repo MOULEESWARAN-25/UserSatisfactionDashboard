@@ -8,6 +8,7 @@ import { RatingDistributionChart } from "@/components/charts/RatingDistributionC
 import { FeedbackGrowthChart } from "@/components/charts/FeedbackGrowthChart";
 import { SatisfactionOverview } from "@/components/dashboard/SatisfactionOverview";
 import { Skeleton } from "@/components/ui/skeleton";
+import { AdminOnly } from "@/components/auth/ProtectedRoute";
 import type { AnalyticsDashboard } from "@/types/analytics";
 
 export default function AnalyticsPage() {
@@ -25,28 +26,37 @@ export default function AnalyticsPage() {
   }, [selected]);
 
   return (
-    <AppShell title="Analytics" description="Deep-dive into satisfaction metrics">
-      <div className="space-y-5">
-        <ServiceFilter selected={selected} onChange={setSelected} />
+    <AdminOnly>
+      <AppShell
+        title="Analytics"
+        description="Deep-dive into satisfaction metrics"
+      >
+        <div className="space-y-6">
+          <ServiceFilter selected={selected} onChange={setSelected} />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {loading ? (
-            <>
-              <Skeleton className="h-64 rounded-xl" />
-              <Skeleton className="h-64 rounded-xl" />
-              <Skeleton className="h-64 rounded-xl" />
-              <Skeleton className="h-64 rounded-xl" />
-            </>
-          ) : (
-            <>
-              <SatisfactionTrendChart data={analytics?.trends ?? []} />
-              <RatingDistributionChart data={analytics?.ratingDistribution ?? []} />
-              <FeedbackGrowthChart data={analytics?.trends ?? []} />
-              <SatisfactionOverview data={analytics?.serviceBreakdown ?? []} />
-            </>
-          )}
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+            {loading ? (
+              <>
+                <Skeleton className="h-80 rounded-xl" />
+                <Skeleton className="h-80 rounded-xl" />
+                <Skeleton className="h-80 rounded-xl" />
+                <Skeleton className="h-80 rounded-xl" />
+              </>
+            ) : (
+              <>
+                <SatisfactionTrendChart data={analytics?.trends ?? []} />
+                <RatingDistributionChart
+                  data={analytics?.ratingDistribution ?? []}
+                />
+                <FeedbackGrowthChart data={analytics?.trends ?? []} />
+                <SatisfactionOverview
+                  data={analytics?.serviceBreakdown ?? []}
+                />
+              </>
+            )}
+          </div>
         </div>
-      </div>
-    </AppShell>
+      </AppShell>
+    </AdminOnly>
   );
 }

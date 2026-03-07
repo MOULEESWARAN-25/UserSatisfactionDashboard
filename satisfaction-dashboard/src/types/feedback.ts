@@ -19,6 +19,7 @@ export interface Service {
 
 export interface FeedbackSubmission {
   studentId: string;
+  studentName?: string;
   serviceId: ServiceId;
   ratings: Record<string, number>; // questionId → 1-5
   overallSatisfaction: number;
