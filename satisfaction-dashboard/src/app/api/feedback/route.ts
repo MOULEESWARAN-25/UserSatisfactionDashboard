@@ -2,15 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import mongoose from "mongoose";
 import { MOCK_FEEDBACK, USE_MOCK_DATA } from "@/lib/mock-data";
+import { getTenantContext, buildTenantQuery } from "@/lib/tenant-context";
 
-// Minimal Mongoose schema
+// Minimal Mongoose schema with collegeId
 const FeedbackSchema = new mongoose.Schema({
   studentId: String,
   studentName: String,
   serviceId: String,
+  collegeId: String, // Multi-tenant support
   ratings: mongoose.Schema.Types.Mixed,
   overallSatisfaction: Number,
   comment: String,
+  demographics: mongoose.Schema.Types.Mixed, // Optional demographic context
   submittedAt: { type: Date, default: Date.now },
 });
 
@@ -29,6 +32,10 @@ export async function POST(req: NextRequest) {
 
   try {
     await connectDB();
+    
+    // Get tenant context
+    const { collegeId } = getTenantContext(req);
+    
     const body = await req.json();
 
     // Basic validation
@@ -39,7 +46,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid satisfaction score" }, { status: 400 });
     }
 
-    const doc = await Feedback.create(body);
+    // Add collegeId to the submission
+    const feedbackData = {
+      ...body,
+      collegeId,
+      submittedAt: new Date(),
+    };
+
+    const doc = await Feedback.create(feedbackData);
     return NextResponse.json({ success: true, id: doc._id }, { status: 201 });
   } catch (err) {
     console.error("Feedback POST Error:", err);
@@ -67,11 +81,18 @@ export async function GET(req: NextRequest) {
 
   try {
     await connectDB();
+    
+    // Get tenant context
+    const { collegeId } = getTenantContext(req);
+    
     const { searchParams } = new URL(req.url);
     const serviceId = searchParams.get("serviceId");
     const limit = parseInt(searchParams.get("limit") ?? "20");
 
-    const query = serviceId && serviceId !== "all" ? { serviceId } : {};
+    // Build tenant-aware query
+    const baseQuery = serviceId && serviceId !== "all" ? { serviceId } : {};
+    const query = buildTenantQuery(baseQuery, collegeId);
+    
     const docs = await Feedback.find(query)
       .sort({ submittedAt: -1 })
       .limit(limit)

@@ -55,25 +55,20 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (val: boole
 export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   
-  // Dashboard Settings
-  const [defaultView, setDefaultView] = useState("dashboard");
-  const [showTrends, setShowTrends] = useState(true);
-  const [showRecentFeedback, setShowRecentFeedback] = useState(true);
-  
-  // Notification Settings
+  // Notification Settings (Essential)
   const [emailNotifications, setEmailNotifications] = useState(true);
   const [lowSatisfactionAlerts, setLowSatisfactionAlerts] = useState(true);
   const [dailyDigest, setDailyDigest] = useState(false);
-  const [feedbackNotifications, setFeedbackNotifications] = useState(true);
   
-  // Feedback Settings
+  // Alert Threshold (Essential)
+  const [satisfactionThreshold, setSatisfactionThreshold] = useState("3.0");
+  
+  // Feedback Settings (Essential)
   const [autoThankYou, setAutoThankYou] = useState(true);
-  const [collectAnonymous, setCollectAnonymous] = useState(true);
-  const [satisfactionThreshold, setSatisfactionThreshold] = useState("3.5");
+  const [collectAnonymous, setCollectAnonymous] = useState(false);
   
-  // Export Settings
+  // Export Settings (Essential)
   const [exportFormat, setExportFormat] = useState("csv");
-  const [includeComments, setIncludeComments] = useState(true);
 
   const handleSave = () => {
     setSaved(true);
@@ -82,9 +77,8 @@ export default function SettingsPage() {
 
   return (
     <ProtectedRoute allowedRoles={["admin", "student"]}>
-      <AppShell title="Settings" description="Configure your dashboard preferences">
-        <div className="max-w-3xl space-y-6">
-          {/* Dashboard Preferences */}
+      <AppShell title="Settings" description="Essential configuration options">
+        <div className="max-w-3xl space-y-6">{/* Notification Settings */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -93,62 +87,12 @@ export default function SettingsPage() {
             <Card className="overflow-hidden">
               <CardHeader className="border-b border-border/50">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
-                    <BarChart3 className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-base">Dashboard Preferences</CardTitle>
-                    <CardDescription>Customize your dashboard view</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4 pt-6">
-                <div className="space-y-2">
-                  <Label htmlFor="default-view">Default Landing Page</Label>
-                  <select
-                    id="default-view"
-                    className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    value={defaultView}
-                    onChange={(e) => setDefaultView(e.target.value)}
-                  >
-                    <option value="dashboard">Dashboard Overview</option>
-                    <option value="analytics">Analytics</option>
-                    <option value="feedback">Recent Feedback</option>
-                  </select>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Show Trend Charts</p>
-                    <p className="text-xs text-muted-foreground">Display satisfaction trend charts on dashboard</p>
-                  </div>
-                  <Toggle checked={showTrends} onChange={setShowTrends} />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Show Recent Feedback</p>
-                    <p className="text-xs text-muted-foreground">Display latest feedback submissions</p>
-                  </div>
-                  <Toggle checked={showRecentFeedback} onChange={setShowRecentFeedback} />
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
-          {/* Notification Settings */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <Card className="overflow-hidden">
-              <CardHeader className="border-b border-border/50">
-                <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950">
                     <Bell className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                   </div>
                   <div>
-                    <CardTitle className="text-base">Notification Settings</CardTitle>
-                    <CardDescription>Manage how you receive updates</CardDescription>
+                    <CardTitle className="text-base">Notification Preferences</CardTitle>
+                    <CardDescription>Manage how you receive alerts</CardDescription>
                   </div>
                 </div>
               </CardHeader>
@@ -172,18 +116,11 @@ export default function SettingsPage() {
                   <Toggle checked={lowSatisfactionAlerts} onChange={setLowSatisfactionAlerts} />
                 </div>
                 <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">New Feedback Notifications</p>
-                    <p className="text-xs text-muted-foreground">Alert when new feedback is submitted</p>
-                  </div>
-                  <Toggle checked={feedbackNotifications} onChange={setFeedbackNotifications} />
-                </div>
-                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <Clock className="h-4 w-4 text-muted-foreground" />
                     <div>
                       <p className="text-sm font-medium">Daily Digest</p>
-                      <p className="text-xs text-muted-foreground">Summary email every morning</p>
+                      <p className="text-xs text-muted-foreground">Summary email every morning at 8 AM</p>
                     </div>
                   </div>
                   <Toggle checked={dailyDigest} onChange={setDailyDigest} />
@@ -192,7 +129,47 @@ export default function SettingsPage() {
             </Card>
           </motion.div>
 
-          {/* Feedback Collection Settings */}
+          {/* Alert Threshold */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <Card className="overflow-hidden">
+              <CardHeader className="border-b border-border/50">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950">
+                    <MessageSquare className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-base">Issue Detection</CardTitle>
+                    <CardDescription>Set threshold for automatic alerts</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4 pt-6">
+                <div className="space-y-2">
+                  <Label htmlFor="threshold">Satisfaction Alert Threshold</Label>
+                  <select
+                    id="threshold"
+                    className="flex h-11 w-full rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    value={satisfactionThreshold}
+                    onChange={(e) => setSatisfactionThreshold(e.target.value)}
+                  >
+                    <option value="2.5">2.5 - Critical issues only</option>
+                    <option value="3.0">3.0 - Alert on low scores (Recommended)</option>
+                    <option value="3.5">3.5 - Alert on moderate issues</option>
+                    <option value="4.0">4.0 - Alert on any decline</option>
+                  </select>
+                  <p className="text-xs text-muted-foreground">
+                    You'll be notified when any service satisfaction drops below this score
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
+          {/* Export Settings */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

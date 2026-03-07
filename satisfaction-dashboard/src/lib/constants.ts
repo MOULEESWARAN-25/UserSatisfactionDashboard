@@ -64,6 +64,54 @@ export const SERVICE_MAP = Object.fromEntries(
   SERVICES.map((s) => [s.id, s])
 );
 
+// Department Mappings
+export const DEPARTMENTS = [
+  {
+    id: "food-services",
+    name: "Food Services",
+    serviceIds: ["cafeteria"],
+  },
+  {
+    id: "academic-resources",
+    name: "Academic Resources",
+    serviceIds: ["library"],
+  },
+  {
+    id: "academic-technology",
+    name: "Academic Technology",
+    serviceIds: ["online-course"],
+  },
+  {
+    id: "residential-management",
+    name: "Residential Management",
+    serviceIds: ["hostel"],
+  },
+  {
+    id: "student-affairs",
+    name: "Student Affairs",
+    serviceIds: ["campus-event"],
+  },
+];
+
+export const SERVICE_TO_DEPARTMENT_MAP: Record<string, string> = {
+  cafeteria: "Food Services",
+  library: "Academic Resources",
+  "online-course": "Academic Technology",
+  hostel: "Residential Management",
+  "campus-event": "Student Affairs",
+};
+
+// Satisfaction thresholds for issue detection
+export const SATISFACTION_THRESHOLDS = {
+  CRITICAL: 2.5,
+  LOW: 3.0,
+  MEDIUM: 3.5,
+  GOOD: 4.0,
+} as const;
+
+// Total enrolled students (for participation calculation)
+export const TOTAL_ENROLLED_STUDENTS = 2500;
+
 export const NAV_ITEMS = [
   { label: "Dashboard", href: "/dashboard", icon: "LayoutDashboard" },
   { label: "Feedback", href: "/feedback", icon: "MessageSquare" },

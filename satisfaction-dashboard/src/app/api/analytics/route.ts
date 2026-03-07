@@ -3,10 +3,12 @@ import { connectDB } from "@/lib/mongodb";
 import mongoose from "mongoose";
 import { SERVICES } from "@/lib/constants";
 import { MOCK_ANALYTICS, USE_MOCK_DATA } from "@/lib/mock-data";
+import { getTenantContext, buildTenantQuery } from "@/lib/tenant-context";
 
 const FeedbackSchema = new mongoose.Schema({
   studentId: String,
   serviceId: String,
+  collegeId: String, // Multi-tenant support
   ratings: mongoose.Schema.Types.Mixed,
   overallSatisfaction: Number,
   comment: String,
@@ -36,9 +38,16 @@ export async function GET(req: NextRequest) {
 
   try {
     await connectDB();
+    
+    // Get tenant context
+    const { collegeId } = getTenantContext(req);
+    
     const { searchParams } = new URL(req.url);
     const serviceId = searchParams.get("serviceId");
-    const matchStage = serviceId && serviceId !== "all" ? { serviceId } : {};
+    
+    // Build tenant-aware query - ALWAYS include collegeId
+    const baseMatch = serviceId && serviceId !== "all" ? { serviceId } : {};
+    const matchStage = buildTenantQuery(baseMatch, collegeId);
 
     const now = new Date();
     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
@@ -139,19 +148,19 @@ export async function GET(req: NextRequest) {
     // Service breakdown with trend calculation
     const serviceBreakdown = await Promise.all(
       SERVICES.map(async (s) => {
-        // Current average
+        // Current average (tenant-filtered)
         const [agg] = await Feedback.aggregate([
-          { $match: { serviceId: s.id } },
+          { $match: { serviceId: s.id, collegeId } },
           { $group: { _id: null, avg: { $avg: "$overallSatisfaction" }, total: { $sum: 1 } } },
         ]);
 
-        // This week vs last week for trend
+        // This week vs last week for trend (tenant-filtered)
         const [thisWeek] = await Feedback.aggregate([
-          { $match: { serviceId: s.id, submittedAt: { $gte: oneWeekAgo } } },
+          { $match: { serviceId: s.id, collegeId, submittedAt: { $gte: oneWeekAgo } } },
           { $group: { _id: null, avg: { $avg: "$overallSatisfaction" } } },
         ]);
         const [lastWeek] = await Feedback.aggregate([
-          { $match: { serviceId: s.id, submittedAt: { $gte: twoWeeksAgo, $lt: oneWeekAgo } } },
+          { $match: { serviceId: s.id, collegeId, submittedAt: { $gte: twoWeeksAgo, $lt: oneWeekAgo } } },
           { $group: { _id: null, avg: { $avg: "$overallSatisfaction" } } },
         ]);
 
