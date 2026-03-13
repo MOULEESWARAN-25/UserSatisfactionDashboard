@@ -1,17 +1,17 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ServiceFilter } from "@/components/dashboard/ServiceFilter";
 import { ServiceComparisonChart } from "@/components/charts/ServiceComparisonChart";
-import { SentimentCard } from "@/components/charts/SentimentCard";
 import { ImprovementAreasCard } from "@/components/charts/ImprovementAreasCard";
 import { RatingDistributionChart } from "@/components/charts/RatingDistributionChart";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { AdminOnly } from "@/components/auth/ProtectedRoute";
-import { TrendingUp, Users, Target } from "lucide-react";
+import { Users, BarChart3, Award, AlertTriangle, TrendingDown } from "lucide-react";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 import type { AnalyticsDashboard, AdvancedAnalytics } from "@/types/analytics";
 import { MOCK_ANALYTICS, MOCK_ADVANCED_ANALYTICS } from "@/lib/mock-data";
 
@@ -28,169 +28,247 @@ export default function AnalyticsPage() {
       .then((r) => r.json())
       .then((data) => {
         setAnalytics(data);
-        // Use mock advanced analytics for now
+        setAdvancedAnalytics(MOCK_ADVANCED_ANALYTICS);
+      })
+      .catch(() => {
+        setAnalytics(MOCK_ANALYTICS);
         setAdvancedAnalytics(MOCK_ADVANCED_ANALYTICS);
       })
       .finally(() => setLoading(false));
   }, [selected]);
 
-  const responseRate = advancedAnalytics
-    ? Math.round(
-        advancedAnalytics.serviceDetails.reduce((acc, s) => acc + s.responseRate, 0) /
-          advancedAnalytics.serviceDetails.length
-      )
-    : 0;
+  const positiveCount = advancedAnalytics?.sentiment.positive ?? 0;
+  const totalSentiment =
+    (advancedAnalytics?.sentiment.positive ?? 0) +
+    (advancedAnalytics?.sentiment.neutral ?? 0) +
+    (advancedAnalytics?.sentiment.negative ?? 0);
+  const positiveRate = totalSentiment > 0 ? Math.round((positiveCount / totalSentiment) * 100) : 0;
+
+  const serviceDetails = advancedAnalytics?.serviceDetails ?? [];
+  const sortedByScore = [...(analytics?.serviceBreakdown ?? [])].sort((a, b) => b.avgScore - a.avgScore);
+  const bestService = sortedByScore[0];
+  const lowestService = [...(analytics?.serviceBreakdown ?? [])].sort((a, b) => a.avgScore - b.avgScore)[0];
+  const mostActive = [...(analytics?.serviceBreakdown ?? [])].sort((a, b) => b.totalFeedback - a.totalFeedback)[0];
+  const improvementCount = advancedAnalytics?.improvementAreas?.length ?? 0;
+  const needsAttentionCount = (analytics?.serviceBreakdown ?? []).filter((s) => s.avgScore < 3.5).length;
+
+  const findTopComplaintCategory = (serviceName: string) => {
+    const issue = (advancedAnalytics?.topIssues ?? []).find((item) =>
+      item.toLowerCase().includes(serviceName.toLowerCase().split(" ")[0])
+    );
+    if (!issue) return "General";
+    if (issue.toLowerCase().includes("wifi") || issue.toLowerCase().includes("stability")) return "Infrastructure";
+    if (issue.toLowerCase().includes("pricing") || issue.toLowerCase().includes("cost")) return "Pricing";
+    if (issue.toLowerCase().includes("seating")) return "Capacity";
+    if (issue.toLowerCase().includes("communication")) return "Communication";
+    return "Service Quality";
+  };
 
   return (
     <AdminOnly>
-      <AppShell
-        title="Analytics"
-        description="Advanced insights and detailed analysis"
-      >
+      <AppShell title="Analytics" description="Deep insights into student satisfaction">
         <div className="space-y-6">
           <ServiceFilter selected={selected} onChange={setSelected} />
 
-          {/* Quick Stats Row - Simplified to 3 */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          {/* Summary Stats */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
             {loading ? (
-              Array.from({ length: 3 }).map((_, i) => (
-                <Skeleton key={i} className="h-24 rounded-xl" />
-              ))
+              Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)
             ) : (
               <>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0 }}
-                >
-                  <Card>
-                    <CardContent className="flex items-center gap-4 p-4">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50 dark:bg-emerald-950">
-                        <TrendingUp className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-                      </div>
-                      <div>
-                        <p className="text-2xl font-semibold">{responseRate}%</p>
-                        <p className="text-xs text-muted-foreground">Response Rate</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                >
-                  <Card>
-                    <CardContent className="flex items-center gap-4 p-4">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950">
-                        <Users className="h-5 w-5 text-blue-600 dark:text-blue-400" />
-                      </div>
-                      <div>
-                        <p className="text-2xl font-semibold">
-                          {advancedAnalytics?.sentiment.positive ?? 0}
-                        </p>
-                        <p className="text-xs text-muted-foreground">Positive Reviews</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  <Card>
-                    <CardContent className="flex items-center gap-4 p-4">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-50 dark:bg-amber-950">
-                        <Target className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                      </div>
-                      <div>
-                        <p className="text-2xl font-semibold">
-                          {advancedAnalytics?.improvementAreas.length ?? 0}
-                        </p>
-                        <p className="text-xs text-muted-foreground">Improvement Areas</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
+                {[
+                  {
+                    label: "Top Performer",
+                    value: bestService?.serviceName ?? "\u2014",
+                    icon: Award,
+                    color: "text-amber-600 dark:text-amber-400",
+                    bg: "bg-amber-50 dark:bg-amber-950/60",
+                    accent: "from-amber-500/15 to-transparent",
+                  },
+                  {
+                    label: "Most Active Service",
+                    value: mostActive?.serviceName ?? "\u2014",
+                    icon: BarChart3,
+                    color: "text-indigo-600 dark:text-indigo-400",
+                    bg: "bg-indigo-50 dark:bg-indigo-950/60",
+                    accent: "from-indigo-500/15 to-transparent",
+                  },
+                  {
+                    label: "Positive Sentiment",
+                    value: `${positiveRate}%`,
+                    icon: Users,
+                    color: "text-emerald-600 dark:text-emerald-400",
+                    bg: "bg-emerald-50 dark:bg-emerald-950/60",
+                    accent: "from-emerald-500/15 to-transparent",
+                  },
+                  {
+                    label: "Needs Attention",
+                    value: `${needsAttentionCount} service${needsAttentionCount !== 1 ? "s" : ""}`,
+                    icon: AlertTriangle,
+                    color: "text-rose-600 dark:text-rose-400",
+                    bg: "bg-rose-50 dark:bg-rose-950/60",
+                    accent: "from-rose-500/15 to-transparent",
+                  },
+                  {
+                    label: "Lowest Performer",
+                    value: lowestService?.serviceName ?? "\u2014",
+                    icon: TrendingDown,
+                    color: "text-orange-600 dark:text-orange-400",
+                    bg: "bg-orange-50 dark:bg-orange-950/60",
+                    accent: "from-orange-500/15 to-transparent",
+                  },
+                ].map((stat, idx) => (
+                  <motion.div
+                    key={stat.label}
+                    initial={{ opacity: 0, y: 16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.07 }}
+                  >
+                    <Card className="overflow-hidden">
+                      <CardContent className="relative flex min-h-[90px] items-center gap-4 p-4">
+                        <div className={cn("pointer-events-none absolute inset-y-0 right-0 w-20 bg-gradient-to-l opacity-70", stat.accent)} />
+                        <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl", stat.bg)}>
+                          <stat.icon className={cn("h-5 w-5", stat.color)} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-[15px] font-bold leading-tight">{stat.value}</p>
+                          <p className="mt-0.5 text-xs text-muted-foreground">{stat.label}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
               </>
             )}
           </div>
 
-          {/* Main Analytics Grid - Removed Peak Hours */}
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            {loading ? (
-              <>
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
+            <div className="space-y-6 xl:col-span-2">
+              {loading ? (
                 <Skeleton className="h-[380px] rounded-xl" />
-                <Skeleton className="h-[380px] rounded-xl" />
-                <Skeleton className="h-[280px] rounded-xl" />
-                <Skeleton className="h-[280px] rounded-xl" />
-              </>
-            ) : (
-              <>
-                <ServiceComparisonChart
-                  data={analytics?.serviceBreakdown ?? []}
-                  index={0}
-                />
-                <SentimentCard
-                  data={advancedAnalytics?.sentiment ?? { positive: 0, neutral: 0, negative: 0 }}
-                  index={1}
-                />
-                <RatingDistributionChart
-                  data={analytics?.ratingDistribution ?? []}
-                  index={2}
-                />
-                <ImprovementAreasCard
-                  data={advancedAnalytics?.improvementAreas ?? []}
-                  index={3}
-                />
-              </>
-            )}
+              ) : (
+                <ServiceComparisonChart data={analytics?.serviceBreakdown ?? []} />
+              )}
+
+              {loading ? (
+                <Skeleton className="h-[300px] rounded-xl" />
+              ) : (
+                <RatingDistributionChart data={analytics?.ratingDistribution ?? []} />
+              )}
+            </div>
+
+            <div className="space-y-6">
+              {loading ? (
+                <Skeleton className="h-[320px] rounded-xl" />
+              ) : (
+                <ImprovementAreasCard data={advancedAnalytics?.improvementAreas ?? []} />
+              )}
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Sentiment Analysis</CardTitle>
+                  <CardDescription>Current emotional distribution across responses</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {[
+                    {
+                      label: "Positive",
+                      value: advancedAnalytics?.sentiment.positive ?? 0,
+                      color: "bg-emerald-500",
+                    },
+                    {
+                      label: "Neutral",
+                      value: advancedAnalytics?.sentiment.neutral ?? 0,
+                      color: "bg-blue-500",
+                    },
+                    {
+                      label: "Negative",
+                      value: advancedAnalytics?.sentiment.negative ?? 0,
+                      color: "bg-rose-500",
+                    },
+                  ].map((item) => {
+                    const pct = totalSentiment > 0 ? (item.value / totalSentiment) * 100 : 0;
+                    return (
+                      <div key={item.label} className="space-y-1.5">
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-muted-foreground">{item.label}</span>
+                          <span className="font-semibold">{Math.round(pct)}%</span>
+                        </div>
+                        <div className="h-2 overflow-hidden rounded-full bg-muted">
+                          <motion.div
+                            className={cn("h-full rounded-full", item.color)}
+                            initial={{ width: 0 }}
+                            animate={{ width: `${pct}%` }}
+                            transition={{ duration: 0.6 }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  <div className="rounded-lg border bg-muted/30 p-3 text-sm text-muted-foreground">
+                    <p>
+                      {positiveRate}% of analyzed responses are currently positive.
+                    </p>
+                    <p className="mt-1">{totalSentiment} total responses analyzed.</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
 
-          {/* Top Issues Section */}
-          <div className="grid grid-cols-1 gap-6">
-            {loading ? (
-              <Skeleton className="h-[350px] rounded-xl" />
-            ) : (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-              >
-                <Card className="h-full">
-                  <CardHeader className="flex flex-row items-center justify-between pb-4">
-                    <div className="space-y-1">
-                      <CardTitle className="text-base font-semibold">
-                        Top Issues Reported
-                      </CardTitle>
-                      <CardDescription>
-                        Most frequently mentioned concerns from feedback
-                      </CardDescription>
+          <Card>
+            <CardHeader>
+              <CardTitle>Service Details</CardTitle>
+              <CardDescription>Operational scorecard by service</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {loading ? (
+                <Skeleton className="h-28 rounded-xl" />
+              ) : serviceDetails.length === 0 ? (
+                <p className="text-sm text-muted-foreground">No service detail data available.</p>
+              ) : (
+                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+                  {serviceDetails.map((service) => (
+                    <div key={service.serviceId} className="rounded-lg border bg-muted/20 p-4">
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="font-semibold">{service.serviceName}</p>
+                        <p className="text-xs text-muted-foreground">{service.questionRatings.length} metrics</p>
+                      </div>
+                      <div className="mt-2 flex items-center justify-between text-sm text-muted-foreground">
+                        <span>Avg Score</span>
+                        <span className="font-medium text-foreground">
+                          {(
+                            service.questionRatings.reduce((sum, q) => sum + q.avgRating, 0) /
+                            Math.max(service.questionRatings.length, 1)
+                          ).toFixed(1)}
+                          /5
+                        </span>
+                      </div>
+                      <div className="mt-1 flex items-center justify-between text-sm text-muted-foreground">
+                        <span>Total Feedback</span>
+                        <span className="font-medium text-foreground">
+                          {analytics?.serviceBreakdown.find((s) => s.serviceId === service.serviceId)?.totalFeedback ?? 0}
+                        </span>
+                      </div>
+                      <div className="mt-1 flex items-center justify-between text-sm text-muted-foreground">
+                        <span>Participation</span>
+                        <span className="font-medium text-foreground">{service.responseRate}%</span>
+                      </div>
+                      <div className="mt-1 flex items-center justify-between text-sm text-muted-foreground">
+                        <span>Top Complaint</span>
+                        <span className="font-medium text-foreground">{findTopComplaintCategory(service.serviceName)}</span>
+                      </div>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="space-y-3">
-                      {advancedAnalytics?.topIssues.map((issue, idx) => (
-                        <motion.li
-                          key={issue}
-                          className="flex items-start gap-3 rounded-lg bg-muted/50 p-3"
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.5 + idx * 0.05 }}
-                        >
-                          <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">
-                            {idx + 1}
-                          </span>
-                          <span className="text-sm">{issue}</span>
-                        </motion.li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-          </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <p className="text-xs text-muted-foreground">
+            {improvementCount} improvement area{improvementCount !== 1 ? "s" : ""} currently tracked.
+          </p>
         </div>
       </AppShell>
     </AdminOnly>

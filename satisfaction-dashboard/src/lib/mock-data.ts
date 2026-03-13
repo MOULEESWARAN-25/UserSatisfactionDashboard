@@ -335,7 +335,7 @@ export const DEFAULT_USERS = {
     id: "ADMIN001",
     name: "Campus Admin",
     password: "admin123",
-    role: "admin" as const,
+    role: "college_admin" as const,
   },
   student: {
     id: "STU2024001",

@@ -4,7 +4,7 @@ export const SERVICES: Service[] = [
   {
     id: "cafeteria",
     name: "Cafeteria",
-    icon: "🍽️",
+    icon: "cafeteria",
     questions: [
       { id: "food_quality", label: "Food Quality" },
       { id: "hygiene", label: "Hygiene & Cleanliness" },
@@ -16,7 +16,7 @@ export const SERVICES: Service[] = [
   {
     id: "library",
     name: "Library",
-    icon: "📚",
+    icon: "library",
     questions: [
       { id: "book_availability", label: "Book Availability" },
       { id: "quietness", label: "Quietness" },
@@ -27,7 +27,7 @@ export const SERVICES: Service[] = [
   {
     id: "online-course",
     name: "Online Course",
-    icon: "💻",
+    icon: "online-course",
     questions: [
       { id: "content_quality", label: "Content Quality" },
       { id: "platform_usability", label: "Platform Usability" },
@@ -38,7 +38,7 @@ export const SERVICES: Service[] = [
   {
     id: "hostel",
     name: "Hostel",
-    icon: "🏠",
+    icon: "hostel",
     questions: [
       { id: "room_cleanliness", label: "Room Cleanliness" },
       { id: "facilities", label: "Facilities" },
@@ -50,7 +50,7 @@ export const SERVICES: Service[] = [
   {
     id: "campus-event",
     name: "Campus Event",
-    icon: "🎉",
+    icon: "campus-event",
     questions: [
       { id: "organization", label: "Organization" },
       { id: "content_relevance", label: "Content Relevance" },

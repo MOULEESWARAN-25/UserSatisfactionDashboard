@@ -85,8 +85,8 @@ export function ImprovementAreasCard({ data, index = 0 }: ImprovementAreasCardPr
         ease: [0.25, 0.46, 0.45, 0.94],
       }}
     >
-      <Card className="overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between pb-4">
+      <Card className="h-full overflow-hidden">
+        <CardHeader className="flex min-h-[76px] flex-row items-center justify-between pb-3">
           <div className="space-y-1">
             <CardTitle className="text-base font-semibold">
               Areas for Improvement
@@ -99,7 +99,7 @@ export function ImprovementAreasCard({ data, index = 0 }: ImprovementAreasCardPr
             <AlertTriangle className="h-4 w-4 text-rose-600 dark:text-rose-400" />
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pb-4 pt-0">
           {sortedData.map((item, idx) => (
             <motion.div
               key={item.area}

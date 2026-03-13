@@ -7,6 +7,7 @@ import {
   ArrowLeft,
   Send,
   Check,
+  Shield,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ServiceSelector } from "@/components/forms/ServiceSelector";
@@ -24,7 +25,7 @@ import { useAuth } from "@/lib/auth-context";
 import type { ServiceId } from "@/types/feedback";
 import { cn } from "@/lib/utils";
 
-const STEPS = ["Select Service", "Rate Service", "Review & Submit"];
+const STEPS = ["Select Service", "Rate Questions", "Add Comment", "Review & Submit"];
 
 export function FeedbackForm() {
   const { user } = useAuth();
@@ -35,6 +36,7 @@ export function FeedbackForm() {
   const [ratings, setRatings] = useState<Record<string, number>>({});
   const [overallSatisfaction, setOverallSatisfaction] = useState(0);
   const [comment, setComment] = useState("");
+  const [isAnonymous, setIsAnonymous] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -44,6 +46,12 @@ export function FeedbackForm() {
   const canProceedStep1 =
     service?.questions.every((q) => ratings[q.id] > 0) &&
     overallSatisfaction > 0;
+  const ratedQuestions = service
+    ? service.questions.filter((q) => (ratings[q.id] ?? 0) > 0).length
+    : 0;
+  const totalQuestions = service ? service.questions.length + 1 : 0;
+  const answeredCount = ratedQuestions + (overallSatisfaction > 0 ? 1 : 0);
+  const progressPercent = totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
 
   async function handleSubmit() {
     if (!selectedService || !service || !user) return;
@@ -53,8 +61,9 @@ export function FeedbackForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          studentId: user.id,
-          studentName: user.name,
+          studentId: isAnonymous ? "anonymous" : user.id,
+          studentName: isAnonymous ? "Anonymous" : user.name,
+          isAnonymous,
           serviceId: selectedService,
           serviceName: service.name,
           ratings,
@@ -94,6 +103,7 @@ export function FeedbackForm() {
               setRatings({});
               setOverallSatisfaction(0);
               setComment("");
+              setIsAnonymous(false);
             }}
           >
             Submit Another Response
@@ -147,14 +157,33 @@ export function FeedbackForm() {
         <CardTitle className="text-lg">
           {step === 0 && "Choose a Service"}
           {step === 1 && `Rate: ${service?.name}`}
-          {step === 2 && "Review & Submit"}
+          {step === 2 && "Add an Optional Comment"}
+          {step === 3 && "Review & Submit"}
         </CardTitle>
         <CardDescription>
           {step === 0 &&
             "Select the campus service you'd like to provide feedback for"}
           {step === 1 && "Rate each aspect from 1 (poor) to 5 (excellent)"}
-          {step === 2 && "Review your ratings and add optional comments"}
+          {step === 2 && "Add context in your own words and choose privacy"}
+          {step === 3 && "Review your ratings before final submission"}
         </CardDescription>
+
+        {step >= 1 && service && (
+          <div className="mt-4 space-y-2 rounded-lg border bg-muted/30 p-3">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-medium">Progress</span>
+              <span className="text-muted-foreground">
+                {answeredCount} / {totalQuestions} questions answered
+              </span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-border">
+              <div
+                className="h-full rounded-full bg-primary transition-all"
+                style={{ width: `${Math.min(progressPercent, 100)}%` }}
+              />
+            </div>
+          </div>
+        )}
       </CardHeader>
 
       <CardContent className="space-y-6 p-6">
@@ -169,6 +198,10 @@ export function FeedbackForm() {
         {/* Step 1 */}
         {step === 1 && service && (
           <div className="space-y-1">
+            <div className="mb-4 rounded-xl border bg-muted/20 p-3 text-xs text-muted-foreground">
+              <p className="font-medium text-foreground">Rating Guide</p>
+              <p className="mt-1">1 = Poor, 2 = Fair, 3 = Average, 4 = Good, 5 = Excellent</p>
+            </div>
             <div className="divide-y divide-border/50 overflow-hidden rounded-xl border">
               {service.questions.map((q) => (
                 <div key={q.id} className="bg-card px-4">
@@ -197,6 +230,44 @@ export function FeedbackForm() {
         {/* Step 2 */}
         {step === 2 && (
           <div className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">
+                Comments (optional)
+              </label>
+              <textarea
+                rows={5}
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Share additional thoughts or suggestions..."
+                className="w-full resize-none rounded-xl border border-input bg-transparent px-4 py-3 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+              />
+            </div>
+
+            <div className="rounded-xl border bg-muted/20 p-3">
+              <label className="flex cursor-pointer items-start gap-3">
+                <input
+                  type="checkbox"
+                  checked={isAnonymous}
+                  onChange={(e) => setIsAnonymous(e.target.checked)}
+                  className="mt-1 h-4 w-4 rounded border-input"
+                />
+                <div className="space-y-1">
+                  <p className="flex items-center gap-1 text-sm font-medium">
+                    <Shield className="h-4 w-4" />
+                    Submit anonymously
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Your name and ID will not be attached to this response.
+                  </p>
+                </div>
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* Step 3 */}
+        {step === 3 && (
+          <div className="space-y-6">
             <div className="space-y-3 rounded-xl border bg-muted/30 p-4">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">Service</span>
@@ -216,19 +287,18 @@ export function FeedbackForm() {
                   {service?.questions.length} categories
                 </span>
               </div>
+              <Separator />
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Privacy</span>
+                <span className="font-medium">{isAnonymous ? "Anonymous" : "Named"}</span>
+              </div>
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                Comments (optional)
-              </label>
-              <textarea
-                rows={4}
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Share additional thoughts or suggestions..."
-                className="w-full resize-none rounded-xl border border-input bg-transparent px-4 py-3 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              />
-            </div>
+            {comment && (
+              <div className="rounded-xl border p-4">
+                <p className="mb-2 text-xs font-medium text-muted-foreground">Comment</p>
+                <p className="text-sm">{comment}</p>
+              </div>
+            )}
           </div>
         )}
 
@@ -244,10 +314,10 @@ export function FeedbackForm() {
             Back
           </Button>
 
-          {step < 2 ? (
+          {step < 3 ? (
             <Button
               onClick={() => setStep((s) => s + 1)}
-              disabled={step === 0 ? !canProceedStep0 : !canProceedStep1}
+              disabled={step === 0 ? !canProceedStep0 : step === 1 ? !canProceedStep1 : false}
               className="gap-2"
             >
               Continue

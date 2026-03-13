@@ -15,16 +15,16 @@ export function formatDelta(delta: number): string {
 }
 
 export function getDeltaColor(delta: number): string {
-  if (delta > 0) return "text-emerald-600 dark:text-emerald-400";
-  if (delta < 0) return "text-red-500 dark:text-red-400";
+  if (delta > 0) return "text-primary";
+  if (delta < 0) return "text-destructive";
   return "text-muted-foreground";
 }
 
 export function getRatingColor(rating: number): string {
-  if (rating >= 4.5) return "text-emerald-600";
-  if (rating >= 3.5) return "text-blue-600";
-  if (rating >= 2.5) return "text-yellow-600";
-  return "text-red-500";
+  if (rating >= 4.5) return "text-primary";
+  if (rating >= 3.5) return "text-accent-foreground";
+  if (rating >= 2.5) return "text-muted-foreground";
+  return "text-destructive";
 }
 
 export function formatDate(date: string | Date): string {

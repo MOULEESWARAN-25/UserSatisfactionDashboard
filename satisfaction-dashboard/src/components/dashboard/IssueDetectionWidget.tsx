@@ -1,11 +1,20 @@
 "use client";
 
+import { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, TrendingDown, AlertTriangle, Info } from "lucide-react";
-import { motion } from "framer-motion";
+import { AlertCircle, TrendingDown, AlertTriangle, Info, CheckCircle2 } from "lucide-react";
+import { motion, useInView, AnimatePresence } from "framer-motion";
 import type { DetectedIssue, IssueSeverity } from "@/types/analytics";
 import { cn } from "@/lib/utils";
+import {
+  staggerContainer,
+  staggerItemLeft,
+  cardHoverProps,
+  badgePop,
+  iconHoverProps,
+  scaleIn,
+} from "@/lib/animations";
 
 interface IssueDetectionWidgetProps {
   issues: DetectedIssue[];
@@ -49,114 +58,176 @@ const statusColors: Record<string, string> = {
 };
 
 export function IssueDetectionWidget({ issues, index = 0 }: IssueDetectionWidgetProps) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+
   const criticalIssues = issues.filter((i) => i.severity === "critical" || i.severity === "high");
   const hasIssues = issues.length > 0;
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
+      ref={ref}
+      className="h-full"
+      initial={{ opacity: 0, y: 28 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.5, delay: index * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
+      {...cardHoverProps}
     >
-      <Card className="h-full">
+      <Card className="h-full overflow-hidden transition-shadow hover:shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <div className="flex items-center gap-3">
-            <div
+            <motion.div
               className={cn(
                 "flex h-10 w-10 items-center justify-center rounded-xl",
                 hasIssues ? "bg-rose-50 dark:bg-rose-950" : "bg-emerald-50 dark:bg-emerald-950"
               )}
+              {...iconHoverProps}
+              animate={{
+                ...(hasIssues
+                  ? { rotate: [0, -8, 8, -4, 0], transition: { duration: 0.6, repeat: Infinity, repeatDelay: 4 } }
+                  : {}),
+              }}
             >
               <AlertCircle
                 className={cn(
                   "h-5 w-5",
-                  hasIssues ? "text-rose-600 dark:text-rose-400" : "text-emerald-600 dark:text-emerald-400"
+                  hasIssues
+                    ? "text-rose-600 dark:text-rose-400"
+                    : "text-emerald-600 dark:text-emerald-400"
                 )}
               />
-            </div>
+            </motion.div>
             <div>
               <CardTitle className="text-base font-semibold">Issues Requiring Attention</CardTitle>
               <CardDescription>
-                {hasIssues ? `${criticalIssues.length} critical/high priority` : "All systems performing well"}
+                {hasIssues
+                  ? `${criticalIssues.length} critical/high priority`
+                  : "All systems performing well"}
               </CardDescription>
             </div>
           </div>
-          {hasIssues && (
-            <Badge variant="destructive" className="rounded-full">
-              {issues.length}
-            </Badge>
-          )}
+          <AnimatePresence>
+            {hasIssues && (
+              <motion.div
+                variants={badgePop}
+                initial="hidden"
+                animate="visible"
+                exit={{ scale: 0, opacity: 0 }}
+              >
+                <Badge variant="destructive" className="rounded-full">
+                  {issues.length}
+                </Badge>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </CardHeader>
         <CardContent>
-          {!hasIssues ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
-              <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950">
-                <AlertCircle className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
-              </div>
-              <p className="text-sm font-medium text-muted-foreground">No issues detected</p>
-              <p className="text-xs text-muted-foreground">All services are operating normally</p>
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {issues.slice(0, 5).map((issue, idx) => {
-                const config = severityConfig[issue.severity];
-                const IconComponent = config.icon;
+          <AnimatePresence mode="wait">
+            {!hasIssues ? (
+              <motion.div
+                key="clear"
+                variants={scaleIn}
+                initial="hidden"
+                animate="visible"
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="flex flex-col items-center justify-center py-8 text-center"
+              >
+                <motion.div
+                  className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950"
+                  animate={{ scale: [1, 1.06, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, repeatDelay: 2 }}
+                >
+                  <CheckCircle2 className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
+                </motion.div>
+                <p className="text-sm font-medium text-muted-foreground">No issues detected</p>
+                <p className="text-xs text-muted-foreground">All services are operating normally</p>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="issues"
+                className="space-y-3"
+                variants={staggerContainer}
+                initial="hidden"
+                animate={inView ? "visible" : "hidden"}
+              >
+                {issues.slice(0, 5).map((issue) => {
+                  const config = severityConfig[issue.severity];
+                  const IconComponent = config.icon;
 
-                return (
-                  <motion.div
-                    key={issue.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.05 }}
-                    className={cn(
-                      "rounded-lg border p-3 transition-all hover:shadow-sm",
-                      config.bgColor
-                    )}
-                  >
-                    <div className="flex items-start gap-3">
-                      <IconComponent className={cn("mt-0.5 h-4 w-4 flex-shrink-0", config.color)} />
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-medium leading-tight">{issue.title}</p>
-                          <Badge
-                            variant="secondary"
-                            className={cn("rounded-full text-xs font-medium", statusColors[issue.status])}
-                          >
-                            {issue.status}
-                          </Badge>
-                        </div>
-                        <p className="text-xs text-muted-foreground">{issue.description}</p>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                          <span className="font-medium">{issue.serviceName}</span>
-                          <span>•</span>
-                          <span
-                            className={cn(
-                              "font-semibold",
-                              issue.changePercent < 0 ? "text-rose-600 dark:text-rose-400" : ""
+                  return (
+                    <motion.div
+                      key={issue.id}
+                      variants={staggerItemLeft}
+                      className={cn(
+                        "rounded-lg border p-3 transition-all cursor-default",
+                        config.bgColor
+                      )}
+                      whileHover={{
+                        x: 4,
+                        boxShadow: "0 4px 14px rgba(0,0,0,0.09)",
+                        transition: { duration: 0.18 },
+                      }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <motion.div
+                          whileHover={{ scale: 1.2, rotate: 10 }}
+                          transition={{ duration: 0.18 }}
+                        >
+                          <IconComponent className={cn("mt-0.5 h-4 w-4 flex-shrink-0", config.color)} />
+                        </motion.div>
+                        <div className="flex-1 space-y-1">
+                          <div className="flex items-start justify-between gap-2">
+                            <p className="text-sm font-medium leading-tight">{issue.title}</p>
+                            <motion.div variants={badgePop}>
+                              <Badge
+                                variant="secondary"
+                                className={cn(
+                                  "rounded-full text-xs font-medium flex-shrink-0",
+                                  statusColors[issue.status]
+                                )}
+                              >
+                                {issue.status}
+                              </Badge>
+                            </motion.div>
+                          </div>
+                          <p className="text-xs text-muted-foreground">{issue.description}</p>
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                            <span className="font-medium">{issue.serviceName}</span>
+                            <span>•</span>
+                            <span
+                              className={cn(
+                                "font-semibold",
+                                issue.changePercent < 0 ? "text-rose-600 dark:text-rose-400" : ""
+                              )}
+                            >
+                              {issue.changePercent > 0 ? "+" : ""}
+                              {issue.changePercent.toFixed(1)}%
+                            </span>
+                            {issue.assignment?.assignedTo && (
+                              <>
+                                <span>•</span>
+                                <span>Assigned to: {issue.assignment?.assignedTo?.name}</span>
+                              </>
                             )}
-                          >
-                            {issue.changePercent > 0 ? "+" : ""}
-                            {issue.changePercent.toFixed(1)}%
-                          </span>
-                          {issue.assignedTo && (
-                            <>
-                              <span>•</span>
-                              <span>Assigned to: {issue.assignedTo}</span>
-                            </>
-                          )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-              {issues.length > 5 && (
-                <p className="text-center text-xs text-muted-foreground">
-                  +{issues.length - 5} more issues
-                </p>
-              )}
-            </div>
-          )}
+                    </motion.div>
+                  );
+                })}
+                {issues.length > 5 && (
+                  <motion.p
+                    className="text-center text-xs text-muted-foreground"
+                    initial={{ opacity: 0 }}
+                    animate={inView ? { opacity: 1 } : {}}
+                    transition={{ delay: 0.5 }}
+                  >
+                    +{issues.length - 5} more issues
+                  </motion.p>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </CardContent>
       </Card>
     </motion.div>

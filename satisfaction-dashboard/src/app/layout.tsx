@@ -1,15 +1,24 @@
 // For adding custom fonts with other frameworks, see:
 // https://tailwindcss.com/docs/font-family
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Inter, Noto_Serif_Georgian, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { AuthProvider } from "@/lib/auth-context";
 import "./globals.css";
 
-const fontSans = Plus_Jakarta_Sans({
+const fontSans = Inter({
   subsets: ["latin"],
   variable: "--font-sans",
-  weight: ["400", "500", "600", "700", "800"],
+});
+
+const fontSerif = Noto_Serif_Georgian({
+  subsets: ["latin"],
+  variable: "--font-serif",
+});
+
+const fontMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
 });
 
 export const metadata: Metadata = {
@@ -24,7 +33,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${fontSans.variable} font-sans antialiased`}>
+      <body className={`${fontSans.variable} ${fontSerif.variable} ${fontMono.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="light"

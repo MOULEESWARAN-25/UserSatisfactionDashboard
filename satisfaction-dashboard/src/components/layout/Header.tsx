@@ -1,15 +1,20 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Search, Command, LogOut } from "lucide-react";
+import {
+  Search,
+  LogOut,
+  LayoutDashboard,
+  BarChart3,
+  FileText,
+  MessageSquare,
+  Settings,
+  Grid3x3,
+  Megaphone,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,6 +28,7 @@ import { NotificationsDropdown } from "@/components/layout/NotificationsDropdown
 import { useAuth } from "@/lib/auth-context";
 import { cn } from "@/lib/utils";
 import { SERVICES } from "@/lib/constants";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface HeaderProps {
   title?: string;
@@ -30,223 +36,172 @@ interface HeaderProps {
 }
 
 interface SearchResult {
-  type: "service" | "page";
   title: string;
   href: string;
-  description?: string;
+  description: string;
+  icon: typeof LayoutDashboard;
 }
 
-const PAGES = [
-  { title: "Dashboard", href: "/dashboard", description: "Overview and metrics" },
-  { title: "Analytics", href: "/analytics", description: "Advanced insights" },
-  { title: "Services", href: "/services", description: "Manage campus services" },
-  { title: "Reports", href: "/reports", description: "Generate reports" },
-  { title: "Feedback", href: "/feedback", description: "View all feedback" },
-  { title: "Settings", href: "/settings", description: "App configuration" },
+const PAGES: SearchResult[] = [
+  { title: "Dashboard", href: "/dashboard", description: "Overview & metrics", icon: LayoutDashboard },
+  { title: "Analytics", href: "/analytics", description: "Deep insights & trends", icon: BarChart3 },
+  { title: "Services", href: "/services", description: "Manage campus services", icon: Grid3x3 },
+  { title: "Reports", href: "/reports", description: "Generate & download reports", icon: FileText },
+  { title: "Feedback", href: "/feedback", description: "Browse all feedback", icon: MessageSquare },
+  { title: "My Feedback", href: "/feedback/my", description: "Review your previous submissions", icon: FileText },
+  { title: "Feedback Impact", href: "/announcements", description: "See changes made from student feedback", icon: Megaphone },
+  { title: "Settings", href: "/settings", description: "Configuration", icon: Settings },
 ];
 
 export function Header({ title, description }: HeaderProps) {
   const { user, logout } = useAuth();
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-  const [showResults, setShowResults] = useState(false);
-  const searchRef = useRef<HTMLDivElement>(null);
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
 
   const handleLogout = () => {
     logout();
     router.push("/login");
   };
 
-  // Handle search
   useEffect(() => {
-    if (!searchQuery.trim()) {
-      setSearchResults([]);
-      return;
-    }
-
-    const query = searchQuery.toLowerCase();
-    const results: SearchResult[] = [];
-
-    // Search pages
-    PAGES.forEach((page) => {
-      if (
-        page.title.toLowerCase().includes(query) ||
-        page.description?.toLowerCase().includes(query)
-      ) {
-        results.push({
-          type: "page",
-          title: page.title,
-          href: page.href,
-          description: page.description,
-        });
-      }
+    if (!query.trim()) { setResults([]); return; }
+    const q = query.toLowerCase();
+    const matched: SearchResult[] = [];
+    PAGES.forEach((p) => {
+      if (p.title.toLowerCase().includes(q) || p.description.toLowerCase().includes(q))
+        matched.push(p);
     });
-
-    // Search services
-    SERVICES.forEach((service) => {
-      if (service.name.toLowerCase().includes(query)) {
-        results.push({
-          type: "service",
-          title: service.name,
-          href: `/services?service=${service.id}`,
-          description: `View ${service.name} feedback`,
-        });
-      }
+    SERVICES.forEach((s) => {
+      if (s.name.toLowerCase().includes(q))
+        matched.push({ title: s.name, href: `/services?service=${s.id}`, description: `${s.name} feedback data`, icon: Grid3x3 });
     });
+    setResults(matched.slice(0, 5));
+  }, [query]);
 
-    setSearchResults(results.slice(0, 6));
-  }, [searchQuery]);
-
-  // Close search results when clicking outside
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setShowResults(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    const h = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
   }, []);
 
-  // Handle keyboard shortcut
   useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      if ((event.metaKey || event.ctrlKey) && event.key === "k") {
-        event.preventDefault();
-        document.getElementById("header-search")?.focus();
+    const h = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        document.getElementById("hs")?.focus();
+        setOpen(true);
       }
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    };
+    document.addEventListener("keydown", h);
+    return () => document.removeEventListener("keydown", h);
   }, []);
-
-  const handleResultClick = (href: string) => {
-    router.push(href);
-    setSearchQuery("");
-    setShowResults(false);
-  };
 
   const initials = user?.name
-    ? user.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
+    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
     : "U";
 
   return (
-    <header className="sticky top-0 z-40 flex h-[60px] items-center justify-between border-b border-border/40 bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      {/* Left: Page context */}
-      <div className="flex flex-col gap-0.5">
+    <header className="sticky top-0 z-40 flex h-[58px] items-center justify-between border-b border-border/50 bg-background/90 px-6 backdrop-blur-md">
+      {/* Page title */}
+      <div>
         {title && (
-          <h1 className="text-base font-semibold leading-none tracking-tight">
-            {title}
-          </h1>
+          <h1 className="text-[15px] font-semibold leading-tight tracking-tight">{title}</h1>
         )}
         {description && (
-          <p className="text-sm text-muted-foreground">{description}</p>
+          <p className="mt-0.5 text-xs text-muted-foreground">{description}</p>
         )}
       </div>
 
-      {/* Right: Actions */}
-      <div className="flex items-center gap-2">
-        {/* Search (admin only) */}
-        {user?.role === "admin" && (
-          <div className="relative hidden lg:flex" ref={searchRef}>
-            <Search
-              className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-            />
-            <Input
-              id="header-search"
-              placeholder="Search..."
-              className="h-9 w-64 rounded-lg border-0 bg-muted/50 pl-9 text-sm focus-visible:ring-1 focus-visible:ring-ring"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => setShowResults(true)}
-            />
-            <kbd className="pointer-events-none absolute right-3 top-1/2 hidden h-5 -translate-y-1/2 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 sm:flex">
-              <Command className="h-3 w-3" />K
-            </kbd>
-
-            {/* Search Results Dropdown */}
-            {showResults && searchResults.length > 0 && (
-              <div className="absolute left-0 top-full mt-2 w-full rounded-lg border border-border bg-popover p-1 shadow-lg">
-                {searchResults.map((result, idx) => (
-                  <button
-                    key={`${result.type}-${result.href}`}
-                    className="flex w-full items-start gap-3 rounded-md px-3 py-2 text-left transition-colors hover:bg-muted"
-                    onClick={() => handleResultClick(result.href)}
-                  >
-                    <span className="mt-0.5 text-xs text-muted-foreground">
-                      {result.type === "page" ? "📄" : "🏢"}
-                    </span>
-                    <div>
-                      <p className="text-sm font-medium">{result.title}</p>
-                      {result.description && (
-                        <p className="text-xs text-muted-foreground">
-                          {result.description}
-                        </p>
-                      )}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {showResults && searchQuery && searchResults.length === 0 && (
-              <div className="absolute left-0 top-full mt-2 w-full rounded-lg border border-border bg-popover p-4 text-center shadow-lg">
-                <p className="text-sm text-muted-foreground">No results found</p>
-              </div>
-            )}
+      {/* Right actions */}
+      <div className="flex items-center gap-1">
+        {/* Search */}
+        {user?.role === "college_admin" && (
+          <div className="relative mr-1" ref={ref}>
+            <div
+              className="hidden lg:flex h-8 items-center gap-2 rounded-full border border-border/50 bg-muted/50 px-3 text-muted-foreground transition-all hover:border-border/80 cursor-text"
+              style={{ minWidth: 148 }}
+              onClick={() => { document.getElementById("hs")?.focus(); setOpen(true); }}
+            >
+              <Search className="h-3.5 w-3.5 shrink-0" />
+              <input
+                id="hs"
+                autoComplete="off"
+                className="w-24 bg-transparent text-xs text-foreground outline-none placeholder:text-muted-foreground"
+                placeholder="Search..."
+                value={query}
+                onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+                onFocus={() => setOpen(true)}
+              />
+              <span className="pointer-events-none hidden text-[10px] text-muted-foreground/50 sm:block">
+                ⌘K
+              </span>
+            </div>
+            <AnimatePresence>
+              {open && results.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 4, scale: 0.97 }}
+                  transition={{ duration: 0.13 }}
+                  className="absolute right-0 top-full mt-2 w-64 rounded-2xl border border-border/60 bg-popover p-1.5 shadow-xl shadow-black/5"
+                >
+                  {results.map((r) => (
+                    <button
+                      key={r.href}
+                      onClick={() => { router.push(r.href); setQuery(""); setOpen(false); }}
+                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-muted"
+                    >
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted">
+                        <r.icon className="h-3.5 w-3.5 text-muted-foreground" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium leading-tight">{r.title}</p>
+                        <p className="text-xs text-muted-foreground">{r.description}</p>
+                      </div>
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         )}
 
         <ThemeToggle />
+        {user?.role === "college_admin" && <NotificationsDropdown />}
 
-        {/* Notifications (admin only) */}
-        {user?.role === "admin" && <NotificationsDropdown />}
-
-        {/* User dropdown */}
+        {/* Avatar dropdown */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
               variant="ghost"
-              className="relative h-9 gap-2 rounded-lg px-2 hover:bg-muted"
+              className="ml-0.5 h-8 w-8 rounded-full p-0 ring-2 ring-transparent hover:ring-border/60 transition-all"
             >
-              <Avatar className="h-7 w-7">
-                <AvatarImage src="" alt={user?.name} />
-                <AvatarFallback className="bg-primary/10 text-xs font-medium text-primary">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="bg-gradient-to-br from-indigo-500 to-cyan-500 text-white text-[11px] font-bold">
                   {initials}
                 </AvatarFallback>
               </Avatar>
-              <div className="hidden flex-col items-start text-left md:flex">
-                <span className="text-sm font-medium leading-none">
-                  {user?.name}
-                </span>
-                <span className="text-xs capitalize text-muted-foreground">
-                  {user?.role}
-                </span>
-              </div>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-56" align="end" forceMount>
-            <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{user?.name}</p>
-                <p className="text-xs leading-none text-muted-foreground">
-                  {user?.id} ({user?.role})
-                </p>
-              </div>
+          <DropdownMenuContent className="w-52 rounded-xl" align="end" forceMount>
+            <DropdownMenuLabel className="py-2.5 font-normal">
+              <p className="text-sm font-semibold leading-tight">{user?.name}</p>
+              <p className="mt-0.5 text-xs capitalize text-muted-foreground">
+                {user?.role?.replace(/_/g, " ")} · {user?.id}
+              </p>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={handleLogout}
-              className="text-destructive focus:text-destructive"
+              className="gap-2 rounded-lg text-destructive focus:text-destructive"
             >
-              <LogOut className="mr-2 h-4 w-4" />
-              Log out
+              <LogOut className="h-4 w-4" />
+              Sign out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

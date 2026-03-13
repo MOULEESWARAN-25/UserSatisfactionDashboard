@@ -1,11 +1,19 @@
 "use client";
 
+import { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, TrendingUp, TrendingDown, Minus, AlertCircle } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, useInView } from "framer-motion";
 import type { ComplaintSummary } from "@/types/analytics";
 import { cn } from "@/lib/utils";
+import {
+  staggerContainer,
+  staggerItemLeft,
+  cardHoverProps,
+  iconHoverProps,
+  badgePop,
+} from "@/lib/animations";
 
 interface TopComplaintsSummaryProps {
   complaints: ComplaintSummary[];
@@ -20,18 +28,27 @@ const severityColors: Record<string, string> = {
 };
 
 export function TopComplaintsSummary({ complaints, index = 0 }: TopComplaintsSummaryProps) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1 }}
+      ref={ref}
+      className="h-full"
+      initial={{ opacity: 0, y: 28 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.5, delay: index * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
+      {...cardHoverProps}
     >
-      <Card className="h-full">
+      <Card className="h-full overflow-hidden transition-shadow hover:shadow-lg">
         <CardHeader className="pb-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10">
+            <motion.div
+              className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10"
+              {...iconHoverProps}
+            >
               <MessageSquare className="h-5 w-5 text-primary" />
-            </div>
+            </motion.div>
             <div>
               <CardTitle className="text-base font-semibold">Most Reported Problems</CardTitle>
               <CardDescription>Common issues mentioned in feedback</CardDescription>
@@ -40,46 +57,67 @@ export function TopComplaintsSummary({ complaints, index = 0 }: TopComplaintsSum
         </CardHeader>
         <CardContent>
           {complaints.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 text-center">
+            <motion.div
+              className="flex flex-col items-center justify-center py-8 text-center"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={inView ? { opacity: 1, scale: 1 } : {}}
+              transition={{ type: "spring", stiffness: 260, damping: 20 }}
+            >
               <div className="mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950">
                 <MessageSquare className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
               </div>
               <p className="text-sm font-medium text-muted-foreground">No complaints detected</p>
               <p className="text-xs text-muted-foreground">All feedback is positive</p>
-            </div>
+            </motion.div>
           ) : (
-            <div className="space-y-2.5">
+            <motion.div
+              className="space-y-2.5"
+              variants={staggerContainer}
+              initial="hidden"
+              animate={inView ? "visible" : "hidden"}
+            >
               {complaints.map((complaint, idx) => (
                 <motion.div
                   key={complaint.issue}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: idx * 0.05 }}
+                  variants={staggerItemLeft}
                   className={cn(
-                    "rounded-lg border p-3 transition-all hover:bg-muted/50",
+                    "rounded-lg border p-3 transition-all cursor-default",
                     complaint.severity === "critical" &&
                       "border-rose-200 bg-rose-50/30 dark:border-rose-900 dark:bg-rose-950/20"
                   )}
+                  whileHover={{
+                    x: 4,
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                    transition: { duration: 0.18 },
+                  }}
                 >
                   <div className="flex items-start gap-3">
                     {/* Count Badge */}
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-muted text-sm font-bold">
+                    <motion.div
+                      className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-muted text-sm font-bold"
+                      whileHover={{ scale: 1.12, rotate: -5 }}
+                      transition={{ duration: 0.2 }}
+                    >
                       {complaint.count}
-                    </div>
+                    </motion.div>
 
-                    {/* Complaint Info */}
+                    {/* Info */}
                     <div className="flex-1 space-y-1.5">
                       <div className="flex items-start justify-between gap-2">
                         <p className="text-sm font-semibold leading-tight">{complaint.issue}</p>
-                        <Badge
-                          variant="secondary"
-                          className={cn("rounded-full text-xs font-medium", severityColors[complaint.severity])}
-                        >
-                          {complaint.severity}
-                        </Badge>
+                        <motion.div variants={badgePop}>
+                          <Badge
+                            variant="secondary"
+                            className={cn(
+                              "rounded-full text-xs font-medium flex-shrink-0",
+                              severityColors[complaint.severity]
+                            )}
+                          >
+                            {complaint.severity}
+                          </Badge>
+                        </motion.div>
                       </div>
 
-                      {/* Services & Trend */}
                       <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
                         <span className="font-medium">
                           {complaint.services.slice(0, 2).join(", ")}
@@ -111,16 +149,21 @@ export function TopComplaintsSummary({ complaints, index = 0 }: TopComplaintsSum
                   </div>
                 </motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
 
           {complaints.length > 0 && (
-            <div className="mt-4 flex items-center gap-2 rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground">
+            <motion.div
+              className="mt-4 flex items-center gap-2 rounded-lg bg-muted/50 p-3 text-xs text-muted-foreground"
+              initial={{ opacity: 0, y: 8 }}
+              animate={inView ? { opacity: 1, y: 0 } : {}}
+              transition={{ delay: 0.4 + complaints.length * 0.05 }}
+            >
               <AlertCircle className="h-4 w-4 flex-shrink-0" />
               <span>
                 These issues are extracted from feedback comments and rated by frequency and sentiment
               </span>
-            </div>
+            </motion.div>
           )}
         </CardContent>
       </Card>

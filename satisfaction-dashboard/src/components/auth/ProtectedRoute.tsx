@@ -17,27 +17,33 @@ export function ProtectedRoute({
   allowedRoles, 
   redirectTo = "/login" 
 }: ProtectedRouteProps) {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
+  const allowedRolesKey = allowedRoles.join("|");
+  const isRoleAllowed = user ? allowedRoles.includes(user.role) : false;
 
   useEffect(() => {
+    if (isLoading) return;
+
     if (!isAuthenticated) {
-      router.push(redirectTo);
+      router.replace(redirectTo);
       return;
     }
 
-    if (user && !allowedRoles.includes(user.role)) {
+    if (user && !isRoleAllowed) {
       // Redirect to appropriate page based on role
       if (user.role === "student") {
-        router.push("/feedback/submit");
+        router.replace("/feedback/submit");
+      } else if (user.role === "college_admin") {
+        router.replace("/dashboard");
       } else {
-        router.push("/dashboard");
+        router.replace(redirectTo);
       }
     }
-  }, [isAuthenticated, user, allowedRoles, router, redirectTo]);
+  }, [isLoading, isAuthenticated, user, isRoleAllowed, allowedRolesKey, router, redirectTo]);
 
-  // Show loading while checking auth
-  if (!isAuthenticated) {
+  // Show loading while bootstrapping auth state from storage
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
@@ -45,22 +51,19 @@ export function ProtectedRoute({
     );
   }
 
-  // Check role
-  if (user && !allowedRoles.includes(user.role)) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
+  // Redirect side-effect is already queued; avoid rendering a permanent spinner.
+  if (!isAuthenticated || (user && !isRoleAllowed)) return null;
 
   return <>{children}</>;
 }
 
 // Convenience wrappers
+const STUDENT_ROLES: UserRole[] = ["student"];
+const ADMIN_ROLES: UserRole[] = ["college_admin"];
+
 export function StudentOnly({ children }: { children: React.ReactNode }) {
   return (
-    <ProtectedRoute allowedRoles={["student"]}>
+    <ProtectedRoute allowedRoles={STUDENT_ROLES}>
       {children}
     </ProtectedRoute>
   );
@@ -68,7 +71,7 @@ export function StudentOnly({ children }: { children: React.ReactNode }) {
 
 export function AdminOnly({ children }: { children: React.ReactNode }) {
   return (
-    <ProtectedRoute allowedRoles={["admin"]}>
+    <ProtectedRoute allowedRoles={ADMIN_ROLES}>
       {children}
     </ProtectedRoute>
   );

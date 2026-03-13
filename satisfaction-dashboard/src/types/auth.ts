@@ -43,6 +43,7 @@ export interface User {
 export interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
+  isLoading: boolean;
   login: (id: string, name: string, role: UserRole, collegeId?: string) => void;
   logout: () => void;
 }

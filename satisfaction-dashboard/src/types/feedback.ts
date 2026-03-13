@@ -34,6 +34,7 @@ export interface StudentDemographics {
 export interface FeedbackSubmission {
   studentId: string;
   studentName?: string;
+  isAnonymous?: boolean;
   serviceId: ServiceId;
   ratings: Record<string, number>; // questionId → 1-5
   overallSatisfaction: number;

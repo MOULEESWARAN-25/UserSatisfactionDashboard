@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { motion } from "framer-motion";
 import {
   LineChart,
@@ -25,6 +26,7 @@ import type { TrendPoint } from "@/types/analytics";
 interface SatisfactionTrendChartProps {
   data: TrendPoint[];
   index?: number;
+  toolbar?: ReactNode;
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -54,7 +56,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-export function SatisfactionTrendChart({ data, index = 0 }: SatisfactionTrendChartProps) {
+export function SatisfactionTrendChart({ data, index = 0, toolbar }: SatisfactionTrendChartProps) {
+  const hasData = data.length > 0;
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -65,8 +69,8 @@ export function SatisfactionTrendChart({ data, index = 0 }: SatisfactionTrendCha
         ease: [0.25, 0.46, 0.45, 0.94],
       }}
     >
-    <Card className="overflow-hidden">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
+    <Card className="h-full overflow-hidden">
+      <CardHeader className="flex min-h-[76px] flex-row items-center justify-between pb-3">
         <div className="space-y-1">
           <CardTitle className="text-base font-semibold">
             Satisfaction Trend
@@ -79,56 +83,68 @@ export function SatisfactionTrendChart({ data, index = 0 }: SatisfactionTrendCha
           <TrendingUp className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
         </div>
       </CardHeader>
+      {toolbar && <div className="border-t border-border/60 px-6 py-3">{toolbar}</div>}
       <CardContent className="pb-4 pt-0">
-        <div className="h-[280px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
-              data={data}
-              margin={{ top: 8, right: 8, bottom: 0, left: -12 }}
-            >
-              <defs>
-                <linearGradient id="satisfactionGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(var(--chart-2))" stopOpacity={0.2} />
-                  <stop offset="100%" stopColor="hsl(var(--chart-2))" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="hsl(var(--border))"
-                vertical={false}
-              />
-              <XAxis
-                dataKey="date"
-                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                axisLine={false}
-                tickLine={false}
-                tickMargin={8}
-              />
-              <YAxis
-                domain={[1, 5]}
-                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                axisLine={false}
-                tickLine={false}
-                tickMargin={8}
-              />
-              <Tooltip content={<CustomTooltip />} />
-              <Area
-                type="monotone"
-                dataKey="score"
-                stroke="hsl(var(--chart-2))"
-                strokeWidth={2}
-                fill="url(#satisfactionGrad)"
-                dot={false}
-                activeDot={{
-                  r: 5,
-                  strokeWidth: 2,
-                  stroke: "hsl(var(--background))",
-                  fill: "hsl(var(--chart-2))",
-                }}
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-        </div>
+        {hasData ? (
+          <div className="h-[280px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart
+                data={data}
+                margin={{ top: 8, right: 8, bottom: 0, left: -12 }}
+              >
+                <defs>
+                  <linearGradient id="satisfactionGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="var(--primary)" stopOpacity={0.28} />
+                    <stop offset="100%" stopColor="var(--primary)" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid
+                  strokeDasharray="3 3"
+                  stroke="var(--border)"
+                  vertical={false}
+                />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickMargin={8}
+                />
+                <YAxis
+                  domain={[1, 5]}
+                  tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickMargin={8}
+                />
+                <Tooltip content={<CustomTooltip />} />
+                <Area
+                  type="monotone"
+                  dataKey="score"
+                  stroke="var(--primary)"
+                  strokeWidth={3}
+                  fill="url(#satisfactionGrad)"
+                  dot={{
+                    r: 2,
+                    fill: "var(--primary)",
+                    stroke: "var(--background)",
+                    strokeWidth: 1,
+                  }}
+                  activeDot={{
+                    r: 5,
+                    strokeWidth: 2,
+                    stroke: "var(--background)",
+                    fill: "var(--primary)",
+                  }}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <div className="flex h-[280px] items-center justify-center rounded-lg border border-dashed text-sm text-muted-foreground">
+            No trend data available for the selected range.
+          </div>
+        )}
       </CardContent>
     </Card>
     </motion.div>

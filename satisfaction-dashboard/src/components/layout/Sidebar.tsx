@@ -1,257 +1,201 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
 import {
-  LayoutDashboard,
-  MessageSquare,
-  Grid3x3,
-  BarChart3,
-  FileText,
-  Settings,
   ChevronLeft,
   ChevronRight,
+  ChevronsUpDown,
+  FileText,
+  Grid3x3,
+  LayoutDashboard,
   LogOut,
-  PanelLeft,
+  MessageSquare,
+  Settings,
+  BarChart3,
+  Megaphone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
-import { useState } from "react";
 import { useAuth } from "@/lib/auth-context";
+import { Separator } from "@/components/ui/separator";
+import { type ComponentType } from "react";
 
-// Admin navigation items
-const ADMIN_NAV_ITEMS = [
+type SidebarItem = {
+  label: string;
+  href: string;
+  icon: ComponentType<{ className?: string }>;
+  count?: number;
+};
+
+const ADMIN_ITEMS: SidebarItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Analytics", href: "/analytics", icon: BarChart3 },
   { label: "Services", href: "/services", icon: Grid3x3 },
   { label: "Reports", href: "/reports", icon: FileText },
   { label: "Feedback", href: "/feedback", icon: MessageSquare },
-];
-
-// Student navigation items
-const STUDENT_NAV_ITEMS = [
-  { label: "Submit Feedback", href: "/feedback/submit", icon: MessageSquare },
-];
-
-const BOTTOM_ITEMS = [
+  { label: "Impact", href: "/announcements", icon: Megaphone },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
-export function Sidebar() {
+const STUDENT_ITEMS: SidebarItem[] = [
+  { label: "Submit Feedback", href: "/feedback/submit", icon: MessageSquare },
+  { label: "My Feedback", href: "/feedback/my", icon: FileText },
+  { label: "Announcements", href: "/announcements", icon: Megaphone },
+  { label: "Settings", href: "/settings", icon: Settings },
+];
+
+interface SidebarProps {
+  isOpen: boolean;
+  onToggle: () => void;
+}
+
+export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
-  const [collapsed, setCollapsed] = useState(false);
 
-  const isAdmin = user?.role === "admin";
-  const isStudent = user?.role === "student";
-  const navItems = isAdmin ? ADMIN_NAV_ITEMS : isStudent ? STUDENT_NAV_ITEMS : [];
+  const navItems: SidebarItem[] =
+    user?.role === "college_admin"
+      ? ADMIN_ITEMS
+      : user?.role === "student"
+        ? STUDENT_ITEMS
+        : [];
 
   const handleLogout = () => {
     logout();
     router.push("/login");
   };
 
+  const initials = user?.name
+    ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    : "U";
+
+  const roleLabel = user?.role?.replace(/_/g, " ") ?? "user";
+
   return (
-    <motion.aside
-      initial={false}
-      animate={{ width: collapsed ? 72 : 256 }}
-      transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-      className="relative flex h-screen flex-col border-r border-border/40 bg-card"
+    <aside
+      className={cn(
+        "relative hidden h-screen shrink-0 border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-all duration-200 lg:flex lg:flex-col",
+        isOpen ? "w-[300px]" : "w-[64px]"
+      )}
     >
-      {/* Logo */}
-      <div
-        className={cn(
-          "flex h-[60px] shrink-0 items-center border-b border-border/40 px-4",
-          collapsed ? "justify-center" : "gap-3"
-        )}
-      >
-        <motion.div
-          className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <PanelLeft className="h-4 w-4 text-primary-foreground" />
-        </motion.div>
-        <AnimatePresence>
-          {!collapsed && (
-            <motion.div
-              className="flex flex-col"
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              <span className="text-sm font-semibold tracking-tight">
-                SatisfyIQ
-              </span>
-              <span className="text-[10px] text-muted-foreground">
-                Feedback Analytics
-              </span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* User info */}
-      <AnimatePresence>
-        {user && !collapsed && (
-          <motion.div
-            className="border-b border-border/40 px-4 py-3"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.2 }}
-          >
-            <p className="truncate text-sm font-medium">{user.name}</p>
-            <p className="text-xs capitalize text-muted-foreground">
-              {user.role} &bull; {user.id}
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Main navigation */}
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
-        <AnimatePresence>
-          {!collapsed && (
-            <motion.p
-              className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-            >
-              {isAdmin ? "Overview" : "Actions"}
-            </motion.p>
-          )}
-        </AnimatePresence>
-        {navItems.map(({ label, href, icon: Icon }, index) => {
-          const active = pathname === href || pathname.startsWith(href + "/");
-          return (
-            <Link key={href} href={href}>
-              <motion.div
-                className={cn(
-                  "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                  active
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                  collapsed && "justify-center px-2"
-                )}
-                title={collapsed ? label : undefined}
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.2, delay: index * 0.05 }}
-                whileHover={{ x: collapsed ? 0 : 4 }}
-                whileTap={{ scale: 0.98 }}
+      {isOpen ? (
+        <>
+          <div className="p-3 pb-2">
+            <div className="flex items-center gap-2 rounded-lg border border-sidebar-border bg-card/40 p-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-xs font-semibold text-primary-foreground">
+                {initials}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-base font-semibold text-sidebar-foreground">{user?.name ?? "User"}</p>
+                <p className="truncate text-xs capitalize text-sidebar-foreground/60">{roleLabel}</p>
+              </div>
+              <button
+                type="button"
+                onClick={onToggle}
+                className="inline-flex h-7 w-7 items-center justify-center rounded-md text-sidebar-foreground/70 transition-colors hover:bg-muted hover:text-sidebar-foreground"
+                aria-label="Collapse sidebar"
               >
-                <Icon
-                  className={cn(
-                    "h-4 w-4 shrink-0",
-                    active ? "" : "group-hover:text-foreground"
-                  )}
-                />
-                <AnimatePresence>
-                  {!collapsed && (
-                    <motion.span
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: "auto" }}
-                      exit={{ opacity: 0, width: 0 }}
-                      transition={{ duration: 0.15 }}
-                    >
-                      {label}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </motion.div>
-            </Link>
-          );
-        })}
-      </nav>
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
 
-      {/* Bottom section */}
-      <div className="mt-auto space-y-1 border-t border-border/40 px-3 py-4">
-        {BOTTOM_ITEMS.map(({ label, href, icon: Icon }) => (
-          <Link key={href} href={href}>
-            <motion.div
-              className={cn(
-                "group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                pathname === href
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
-                collapsed && "justify-center px-2"
-              )}
-              title={collapsed ? label : undefined}
-              whileHover={{ x: collapsed ? 0 : 4 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Icon className="h-4 w-4 shrink-0" />
-              <AnimatePresence>
-                {!collapsed && (
-                  <motion.span
-                    initial={{ opacity: 0, width: 0 }}
-                    animate={{ opacity: 1, width: "auto" }}
-                    exit={{ opacity: 0, width: 0 }}
-                    transition={{ duration: 0.15 }}
+          <div className="px-3 pt-2">
+            <p className="px-2 text-xs font-semibold uppercase tracking-wide text-sidebar-foreground/50">Platform</p>
+          </div>
+
+          <div className="px-2 pt-1">
+            {navItems.map(({ label, href, icon: Icon, count }) => {
+              const active = pathname === href || pathname.startsWith(`${href}/`);
+              return (
+                <Link key={href} href={href}>
+                  <div
+                    className={cn(
+                      "mb-1 flex items-center gap-3 rounded-md px-2 py-2 text-sm transition-colors",
+                      active
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                        : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    )}
                   >
-                    {label}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </motion.div>
-          </Link>
-        ))}
+                    <Icon className="h-4 w-4" />
+                    <span className="flex-1 font-medium">{label}</span>
+                    {typeof count === "number" && count > 0 && <span className="text-xs tabular-nums opacity-80">{count}</span>}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
 
-        {/* Logout */}
-        <motion.button
-          onClick={handleLogout}
-          className={cn(
-            "group flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-            "text-muted-foreground hover:bg-destructive/10 hover:text-destructive",
-            collapsed && "justify-center px-2"
-          )}
-          title={collapsed ? "Logout" : undefined}
-          whileHover={{ x: collapsed ? 0 : 4 }}
-          whileTap={{ scale: 0.98 }}
-        >
-          <LogOut className="h-4 w-4 shrink-0" />
-          <AnimatePresence>
-            {!collapsed && (
-              <motion.span
-                initial={{ opacity: 0, width: 0 }}
-                animate={{ opacity: 1, width: "auto" }}
-                exit={{ opacity: 0, width: 0 }}
-                transition={{ duration: 0.15 }}
+          <div className="mt-auto p-2.5">
+            <Separator className="mb-2 bg-sidebar-border" />
+            <div className="flex items-center gap-2 rounded-md px-1.5 py-1.5 hover:bg-sidebar-accent/70">
+              <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-md bg-gradient-to-br from-chart-2 to-chart-4 text-xs font-semibold text-primary-foreground">
+                  {initials}
+                </div>
+                <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-sidebar-foreground">{user?.name ?? "User"}</p>
+                <p className="truncate text-xs capitalize text-sidebar-foreground/60">{roleLabel}</p>
+                </div>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="inline-flex h-7 w-7 items-center justify-center rounded-md text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                aria-label="Sign out"
               >
-                Logout
-              </motion.span>
-            )}
-          </AnimatePresence>
-        </motion.button>
-      </div>
+                <LogOut className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="flex items-center justify-center p-2.5">
+            <button
+              type="button"
+              onClick={onToggle}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-sidebar-border bg-card/40 text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              aria-label="Expand sidebar"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
 
-      {/* Collapse toggle */}
-      <motion.div
-        className="absolute -right-3.5 top-16 z-10"
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-      >
-        <Button
-          variant="outline"
-          size="icon"
-          className="h-7 w-7 rounded-full border bg-background shadow-md"
-          onClick={() => setCollapsed(!collapsed)}
-        >
-          <motion.div
-            animate={{ rotate: collapsed ? 0 : 180 }}
-            transition={{ duration: 0.3 }}
-          >
-            <ChevronRight className="h-3.5 w-3.5" />
-          </motion.div>
-        </Button>
-      </motion.div>
-    </motion.aside>
+          <div className="px-2 pb-2 pt-1">
+            {navItems.map(({ label, href, icon: Icon }) => {
+              const active = pathname === href || pathname.startsWith(`${href}/`);
+              return (
+                <Link key={href} href={href}>
+                  <div
+                    title={label}
+                    className={cn(
+                      "mb-1 flex h-10 items-center justify-center rounded-md transition-colors",
+                      active
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                        : "text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+
+          <div className="mt-auto p-3">
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={onToggle}
+                title={user?.name ?? "User"}
+                className="inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-md border border-sidebar-border bg-card/40 text-xs font-semibold text-sidebar-foreground transition-colors hover:bg-sidebar-accent"
+              >
+                <ChevronsUpDown className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </aside>
   );
 }

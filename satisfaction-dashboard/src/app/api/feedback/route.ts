@@ -8,6 +8,7 @@ import { getTenantContext, buildTenantQuery } from "@/lib/tenant-context";
 const FeedbackSchema = new mongoose.Schema({
   studentId: String,
   studentName: String,
+  isAnonymous: { type: Boolean, default: false },
   serviceId: String,
   collegeId: String, // Multi-tenant support
   ratings: mongoose.Schema.Types.Mixed,
@@ -47,8 +48,13 @@ export async function POST(req: NextRequest) {
     }
 
     // Add collegeId to the submission
+    const isAnonymous = body.isAnonymous === true;
+
     const feedbackData = {
       ...body,
+      studentId: isAnonymous ? "anonymous" : body.studentId,
+      studentName: isAnonymous ? "Anonymous" : body.studentName,
+      isAnonymous,
       collegeId,
       submittedAt: new Date(),
     };
@@ -70,11 +76,15 @@ export async function GET(req: NextRequest) {
   if (USE_MOCK_DATA) {
     const { searchParams } = new URL(req.url);
     const serviceId = searchParams.get("serviceId");
+    const studentId = searchParams.get("studentId");
     const limit = parseInt(searchParams.get("limit") ?? "20");
 
     let filtered = MOCK_FEEDBACK;
     if (serviceId && serviceId !== "all") {
       filtered = MOCK_FEEDBACK.filter((f) => f.serviceId === serviceId);
+    }
+    if (studentId) {
+      filtered = filtered.filter((f) => f.studentId === studentId);
     }
     return NextResponse.json({ feedback: filtered.slice(0, limit) });
   }
@@ -87,10 +97,13 @@ export async function GET(req: NextRequest) {
     
     const { searchParams } = new URL(req.url);
     const serviceId = searchParams.get("serviceId");
+    const studentId = searchParams.get("studentId");
     const limit = parseInt(searchParams.get("limit") ?? "20");
 
     // Build tenant-aware query
-    const baseQuery = serviceId && serviceId !== "all" ? { serviceId } : {};
+    const baseQuery: Record<string, unknown> = {};
+    if (serviceId && serviceId !== "all") baseQuery.serviceId = serviceId;
+    if (studentId) baseQuery.studentId = studentId;
     const query = buildTenantQuery(baseQuery, collegeId);
     
     const docs = await Feedback.find(query)

@@ -65,8 +65,8 @@ export function ServiceComparisonChart({ data, index = 0 }: ServiceComparisonCha
         ease: [0.25, 0.46, 0.45, 0.94],
       }}
     >
-      <Card className="overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between pb-2">
+      <Card className="h-full overflow-hidden">
+        <CardHeader className="flex min-h-[76px] flex-row items-center justify-between pb-3">
           <div className="space-y-1">
             <CardTitle className="text-base font-semibold">
               Service Comparison
@@ -80,7 +80,7 @@ export function ServiceComparisonChart({ data, index = 0 }: ServiceComparisonCha
           </div>
         </CardHeader>
         <CardContent className="pb-4 pt-0">
-          <div className="h-[320px] w-full">
+          <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
                 <defs>
