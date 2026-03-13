@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
@@ -198,7 +198,7 @@ export default function SettingsPage() {
                       <option value="4.0">4.0 - Alert on any decline</option>
                   </select>
                   <p className="text-xs text-muted-foreground">
-                    An issue is raised when a service's average satisfaction falls below this score
+                    An issue is raised when a service&apos;s average satisfaction falls below this score
                   </p>
                 </div>
               </CardContent>

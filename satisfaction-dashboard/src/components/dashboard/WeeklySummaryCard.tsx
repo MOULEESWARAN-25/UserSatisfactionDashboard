@@ -133,7 +133,7 @@ export function WeeklySummaryCard({ summary, onRegenerateClicked, index = 0 }: W
                   <FileText className="mb-3 h-12 w-12 text-muted-foreground/50" />
                 </motion.div>
                 <p className="text-sm font-medium text-muted-foreground">No summary generated yet</p>
-                <p className="text-xs text-muted-foreground">Click "Generate" to create weekly report</p>
+                <p className="text-xs text-muted-foreground">Click &quot;Generate&quot; to create weekly report</p>
               </motion.div>
             ) : (
               <motion.div

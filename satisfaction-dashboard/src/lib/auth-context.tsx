@@ -11,7 +11,7 @@ const VALID_ROLES: UserRole[] = ["platform_admin", "college_admin", "department_
 function normalizeStoredUser(raw: unknown): User | null {
   if (!raw || typeof raw !== "object") return null;
 
-  const candidate = raw as Partial<User> & { role?: string };
+  const candidate = raw as Omit<Partial<User>, "role"> & { role?: string };
   const normalizedRole = candidate.role === "admin" ? "college_admin" : candidate.role;
 
   if (!normalizedRole || !VALID_ROLES.includes(normalizedRole as UserRole)) return null;

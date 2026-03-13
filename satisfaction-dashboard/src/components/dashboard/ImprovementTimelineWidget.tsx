@@ -292,7 +292,7 @@ function PhaseRow({
         )}
         {milestone?.notes && (
           <div className="text-xs text-gray-600 mt-1 italic">
-            "{milestone.notes}"
+            &ldquo;{milestone.notes}&rdquo;
           </div>
         )}
       </div>

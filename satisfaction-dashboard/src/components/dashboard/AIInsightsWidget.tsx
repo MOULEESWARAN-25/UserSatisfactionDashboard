@@ -151,7 +151,7 @@ export function AIInsightsWidget({ insights, onRegenerateClicked, index = 0 }: A
                   <Sparkles className="mb-3 h-12 w-12 text-muted-foreground/50" />
                 </motion.div>
                 <p className="text-sm font-medium text-muted-foreground">No insights generated yet</p>
-                <p className="text-xs text-muted-foreground">Click "Regenerate" to analyze current data</p>
+                <p className="text-xs text-muted-foreground">Click &quot;Regenerate&quot; to analyze current data</p>
               </motion.div>
             ) : (
               <motion.div key="content" className="space-y-3">

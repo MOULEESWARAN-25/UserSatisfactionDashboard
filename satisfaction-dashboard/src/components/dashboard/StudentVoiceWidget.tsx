@@ -120,7 +120,7 @@ export function StudentVoiceWidget({ studentVoice, index = 0 }: StudentVoiceWidg
                       {comment.service}
                     </Badge>
                   </div>
-                  <p className="relative text-sm italic leading-relaxed text-foreground/90">"{comment.text}"</p>
+                  <p className="relative text-sm italic leading-relaxed text-foreground/90">&ldquo;{comment.text}&rdquo;</p>
                   <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
                     <span>Rating: {comment.rating}/5</span>
                     <span>{new Date(comment.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>

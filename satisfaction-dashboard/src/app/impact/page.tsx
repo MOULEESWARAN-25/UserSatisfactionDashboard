@@ -46,7 +46,7 @@ export default function ImpactPage() {
                 You Spoke. <br /> We Listened.
               </h1>
               <p className="max-w-xl text-primary-foreground/80 md:text-lg">
-                We believe feedback shouldn't disappear into a black hole. Here is exactly what we've changed based on your recent ratings and comments.
+                We believe feedback shouldn&apos;t disappear into a black hole. Here is exactly what we&apos;ve changed based on your recent ratings and comments.
               </p>
             </div>
           </div>
