@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -13,7 +13,6 @@ import {
   LifeBuoy,
   LineChart,
   Loader2,
-  Shield,
   ShieldCheck,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -27,18 +26,18 @@ import type { UserRole } from "@/types/auth";
 const SYSTEM_POINTS = [
   {
     icon: LineChart,
-    title: "Service Analytics",
-    desc: "Track satisfaction trends by department and service.",
+    title: "5S-Certified Analytics",
+    desc: "Track satisfaction trends across departments, from academics to hostels.",
   },
   {
-    icon: Shield,
-    title: "Secure Access",
-    desc: "Role-based sign-in for students and administrators.",
+    icon: ShieldCheck,
+    title: "Role-Based Access",
+    desc: "Secure portals for BIT Students and Campus Administrators.",
   },
   {
-    icon: LifeBuoy,
-    title: "Issue Follow-up",
-    desc: "Flag and resolve service issues through one workflow.",
+    icon: Building2,
+    title: "Real-Time Tracking",
+    desc: "Monitor issues in the Main Mess, Emerald Hostel, and AC Libraries.",
   },
 ];
 
@@ -125,34 +124,50 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(59,130,246,0.1),transparent_40%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,rgba(99,102,241,0.08),transparent_42%)]" />
+    <div className="relative min-h-screen overflow-hidden bg-slate-50 text-foreground selection:bg-primary/20">
+      {/* Premium Animated Background */}
+      <div className="pointer-events-none absolute inset-0 bg-white" />
+      <motion.div 
+        animate={{ 
+          scale: [1, 1.1, 1],
+          opacity: [0.3, 0.4, 0.3]
+        }}
+        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+        className="pointer-events-none absolute -top-[20%] -left-[10%] h-[70vh] w-[70vh] rounded-full bg-[radial-gradient(circle_at_center,rgba(59,130,246,0.15),transparent_60%)] blur-3xl mix-blend-multiply" 
+      />
+      <motion.div 
+        animate={{ 
+          scale: [1, 1.2, 1],
+          opacity: [0.2, 0.3, 0.2]
+        }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear", delay: 2 }}
+        className="pointer-events-none absolute top-[20%] -right-[10%] h-[80vh] w-[80vh] rounded-full bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.12),transparent_60%)] blur-3xl mix-blend-multiply" 
+      />
 
-      <header className="relative z-10 border-b border-border/70 bg-card/70 backdrop-blur">
-        <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-5 lg:px-8">
+      <header className="relative z-10 border-b border-border/40 bg-white/60 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-5 lg:px-8">
           <motion.div
-            className="flex items-center gap-2"
-            initial={{ opacity: 0, x: -8 }}
+            className="flex items-center gap-3"
+            initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.25 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/15 text-primary">
-              <Building2 className="h-4 w-4" />
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-indigo-600 text-white shadow-md shadow-primary/20">
+              <LifeBuoy className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-sm font-semibold">College Service Feedback System</p>
-              <p className="text-[11px] text-muted-foreground">Internal Portal</p>
+              <p className="text-base font-bold tracking-tight text-slate-900">SatisfyIQ</p>
+              <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">Bannari Amman Institute</p>
             </div>
           </motion.div>
 
           <motion.div
-            className="hidden items-center gap-2 text-xs text-muted-foreground md:flex"
-            initial={{ opacity: 0, x: 8 }}
+            className="hidden items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-1.5 text-xs font-medium text-slate-600 shadow-sm md:flex backdrop-blur-md"
+            initial={{ opacity: 0, x: 10 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.25 }}
+            transition={{ duration: 0.4, ease: "easeOut" }}
           >
-            <Clock3 className="h-3.5 w-3.5" />
+            <Clock3 className="h-3.5 w-3.5 text-primary" />
             Academic Session 2026
           </motion.div>
         </div>
@@ -160,61 +175,60 @@ export default function LoginPage() {
 
       <main className="relative z-10 mx-auto grid w-full max-w-6xl gap-8 px-5 pb-10 pt-10 lg:grid-cols-[1.1fr_0.9fr] lg:px-8 lg:pt-14">
         <motion.section
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          className="space-y-6"
+          transition={{ duration: 0.5, ease: "easeOut", delay: 0.1 }}
+          className="xl:py-8 space-y-8"
         >
-          <div className="space-y-3">
-            <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
-              Service quality monitoring for
-              <span className="text-primary"> college operations</span>
+          <div className="space-y-4">
+            <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 lg:text-5xl xl:text-6xl lg:leading-[1.1]">
+              Elevating <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-indigo-600">student life</span> <br className="hidden lg:block" />at BIT Sathy
             </h1>
-            <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">
-              This system is used by students and administrative teams to submit, track, and review service feedback across campus departments.
+            <p className="max-w-xl text-lg leading-relaxed text-slate-600">
+              The official centralized feedback command center. Track hostel Wi-Fi stability, cafeteria wait times, and academic resources in real-time.
             </p>
           </div>
 
-          <div className="grid gap-3 md:grid-cols-2">
+          <div className="grid gap-4 md:grid-cols-2">
             {SYSTEM_POINTS.map((point, idx) => (
               <motion.div
                 key={point.title}
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.1 + idx * 0.07, duration: 0.3 }}
-                className="rounded-xl border border-border bg-card/80 p-4"
+                transition={{ delay: 0.2 + idx * 0.1, duration: 0.4, ease: "easeOut" }}
+                className="group rounded-2xl border border-slate-200/60 bg-white/70 backdrop-blur-md p-5 shadow-sm transition-all hover:shadow-md hover:bg-white"
               >
-                <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                  <point.icon className="h-4 w-4" />
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
+                  <point.icon className="h-5 w-5" />
                 </div>
-                <p className="text-sm font-semibold">{point.title}</p>
-                <p className="mt-1 text-sm text-muted-foreground">{point.desc}</p>
+                <p className="text-sm font-bold text-slate-900">{point.title}</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-slate-600">{point.desc}</p>
               </motion.div>
             ))}
           </div>
 
           <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.24, duration: 0.3 }}
-            className="rounded-xl border border-border bg-card/80 p-4"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.5, duration: 0.4 }}
+            className="rounded-2xl border border-amber-200/50 bg-amber-50/50 px-5 py-4 backdrop-blur-sm"
           >
-            <p className="text-sm font-semibold">Operational Note</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Use your assigned college credentials only. All activities are logged for system audit and issue follow-up.
+            <p className="text-sm font-semibold text-amber-900">🔒 BIT Sathy IT Policy Note</p>
+            <p className="mt-1 text-sm leading-relaxed text-amber-800/80">
+              Only use your assigned BIT credentials. Access attempts are monitored via the campus firewall mapping to your device MAC address.
             </p>
           </motion.div>
         </motion.section>
 
         <motion.section
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.32 }}
-          className="rounded-2xl border border-border bg-card p-6 shadow-lg shadow-black/10"
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
+          className="rounded-3xl border border-slate-200/50 bg-white/80 p-8 shadow-2xl shadow-slate-200/50 backdrop-blur-xl lg:p-10"
         >
-          <div className="mb-5 space-y-1">
-            <h2 className="text-xl font-semibold">Sign in</h2>
-            <p className="text-sm text-muted-foreground">Select your role and enter your assigned credentials.</p>
+          <div className="mb-8 space-y-2">
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900">Welcome back</h2>
+            <p className="text-sm text-slate-500">Sign in to your SatisfyIQ account to continue.</p>
           </div>
 
           <div className="mb-4 grid grid-cols-2 gap-2 rounded-lg bg-muted p-1">
@@ -249,29 +263,39 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-4">
-            <div className="space-y-1.5">
-              <Label className="text-xs uppercase tracking-wide text-muted-foreground">
-                {selectedRole === "student" ? "Student ID" : "Admin ID"}
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.4 }}
+              className="space-y-1.5"
+            >
+              <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                {selectedRole === "student" ? "BIT Student ID" : "Admin ID"}
               </Label>
               <Input
-                className="h-10 bg-background"
+                className="h-11 bg-slate-50 border-slate-200 transition-colors focus-visible:bg-white"
                 value={userId}
-                placeholder={selectedRole === "student" ? "STU2024001" : "ADMIN001"}
+                placeholder={selectedRole === "student" ? "ex: STU2024001" : "ex: ADMIN001"}
                 onChange={(e) => {
                   setUserId(e.target.value);
                   setError("");
                 }}
               />
-            </div>
+            </motion.div>
 
-            <div className="space-y-1.5">
-              <Label className="text-xs uppercase tracking-wide text-muted-foreground">Password</Label>
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.4 }}
+              className="space-y-1.5"
+            >
+              <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Secure Password</Label>
               <div className="relative">
                 <Input
                   type={showPassword ? "text" : "password"}
-                  className="h-10 bg-background pr-10"
+                  className="h-11 bg-slate-50 border-slate-200 pr-10 transition-colors focus-visible:bg-white"
                   value={password}
-                  placeholder="Enter password"
+                  placeholder="••••••••"
                   onChange={(e) => {
                     setPassword(e.target.value);
                     setError("");
@@ -280,54 +304,55 @@ export default function LoginPage() {
                     if (e.key === "Enter") handleLogin();
                   }}
                 />
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
                   type="button"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9 text-slate-400 hover:text-slate-600 hover:bg-transparent"
                   onClick={() => setShowPassword((prev) => !prev)}
                   tabIndex={-1}
                 >
                   {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+                </Button>
               </div>
-            </div>
+            </motion.div>
 
-            <Button
-              onClick={handleLogin}
-              disabled={isLoading}
-              className="h-10 w-full gap-2"
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5, duration: 0.4 }}
             >
-              {isLoading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Signing in
-                </>
-              ) : (
-                <>
-                  Sign in
-                  <ArrowRight className="h-4 w-4" />
-                </>
-              )}
-            </Button>
+              <Button
+                onClick={handleLogin}
+                disabled={isLoading}
+                className="h-11 w-full gap-2 bg-slate-900 shadow-md hover:bg-slate-800 transition-all font-semibold"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Authenticating
+                  </>
+                ) : (
+                  <>
+                    Secure Login
+                    <ArrowRight className="h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </motion.div>
 
-            <p className="text-center text-xs text-muted-foreground">
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6, duration: 0.4 }}
+              className="text-center text-[11px] font-medium text-slate-400"
+            >
               {selectedRole === "college_admin"
-                ? "Credentials: ADMIN001 / admin123"
-                : "Credentials: STU2024001 / student123"}
-            </p>
+                ? "Dev Mode: ADMIN001 / admin123"
+                : "Dev Mode: STU2024001 / student123"}
+            </motion.p>
 
-            <AnimatePresence>
-              {error && (
-                <motion.p
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -4 }}
-                  className="flex items-center gap-1.5 text-xs text-destructive"
-                >
-                  <CheckCircle2 className="h-3.5 w-3.5" />
-                  {error}
-                </motion.p>
-              )}
-            </AnimatePresence>
+            
           </div>
         </motion.section>
       </main>

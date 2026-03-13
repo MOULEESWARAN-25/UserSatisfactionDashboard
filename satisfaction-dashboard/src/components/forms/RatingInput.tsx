@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface RatingInputProps {
   value: number;
@@ -29,10 +30,12 @@ export function RatingInput({
         {[1, 2, 3, 4, 5].map((star) => {
           const active = star <= (hovered || value);
           return (
-            <button
+            <Button
               key={star}
               type="button"
-              className="rounded-md p-1 transition-all hover:scale-110 hover:bg-amber-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:hover:bg-amber-950"
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 rounded-md p-1 transition-all hover:scale-110 hover:bg-amber-50 dark:hover:bg-amber-950"
               onMouseEnter={() => setHovered(star)}
               onMouseLeave={() => setHovered(0)}
               onClick={() => onChange(star)}
@@ -45,7 +48,7 @@ export function RatingInput({
                     : "fill-transparent text-muted-foreground/30"
                 )}
               />
-            </button>
+            </Button>
           );
         })}
         <span

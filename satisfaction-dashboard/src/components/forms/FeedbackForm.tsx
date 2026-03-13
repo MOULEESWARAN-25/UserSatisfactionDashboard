@@ -3,36 +3,30 @@
 import { useState } from "react";
 import {
   CheckCircle2,
-  ArrowRight,
-  ArrowLeft,
   Send,
-  Check,
   Shield,
+  Megaphone,
+  ArrowRight
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ServiceSelector } from "@/components/forms/ServiceSelector";
 import { RatingInput } from "@/components/forms/RatingInput";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { SERVICES } from "@/lib/constants";
 import { useAuth } from "@/lib/auth-context";
 import type { ServiceId } from "@/types/feedback";
-import { cn } from "@/lib/utils";
-
-const STEPS = ["Select Service", "Rate Questions", "Add Comment", "Review & Submit"];
+import { motion, AnimatePresence } from "framer-motion";
 
 export function FeedbackForm() {
+  const router = useRouter();
   const { user } = useAuth();
-  const [step, setStep] = useState(0);
-  const [selectedService, setSelectedService] = useState<ServiceId | null>(
-    null
-  );
+  const [selectedService, setSelectedService] = useState<ServiceId | null>(null);
   const [ratings, setRatings] = useState<Record<string, number>>({});
   const [overallSatisfaction, setOverallSatisfaction] = useState(0);
   const [comment, setComment] = useState("");
@@ -42,19 +36,17 @@ export function FeedbackForm() {
 
   const service = SERVICES.find((s) => s.id === selectedService);
 
-  const canProceedStep0 = selectedService !== null;
-  const canProceedStep1 =
-    service?.questions.every((q) => ratings[q.id] > 0) &&
-    overallSatisfaction > 0;
   const ratedQuestions = service
     ? service.questions.filter((q) => (ratings[q.id] ?? 0) > 0).length
     : 0;
-  const totalQuestions = service ? service.questions.length + 1 : 0;
-  const answeredCount = ratedQuestions + (overallSatisfaction > 0 ? 1 : 0);
-  const progressPercent = totalQuestions > 0 ? (answeredCount / totalQuestions) * 100 : 0;
+  const totalQuestions = service ? service.questions.length : 0;
+  
+  const isValid = selectedService !== null && 
+                  ratedQuestions === totalQuestions && 
+                  overallSatisfaction > 0;
 
   async function handleSubmit() {
-    if (!selectedService || !service || !user) return;
+    if (!isValid || !service || !user) return;
     setLoading(true);
     try {
       await fetch("/api/feedback", {
@@ -82,259 +74,158 @@ export function FeedbackForm() {
 
   if (submitted) {
     return (
-      <Card className="mx-auto max-w-lg overflow-hidden">
+      <Card className="mx-auto max-w-lg overflow-hidden border-2 border-emerald-500/20">
         <CardContent className="flex flex-col items-center space-y-6 py-16 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-emerald-50 dark:bg-emerald-950">
-            <CheckCircle2 className="h-8 w-8 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <div className="space-y-2">
-            <h3 className="text-xl font-semibold">Feedback Submitted</h3>
-            <p className="mx-auto max-w-sm text-sm text-muted-foreground">
-              Thank you for rating {service?.name}. Your feedback helps us
-              improve campus services.
+          <motion.div 
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ type: "spring", stiffness: 200, damping: 15 }}
+            className="flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/50"
+          >
+            <CheckCircle2 className="h-10 w-10 text-emerald-600 dark:text-emerald-400" />
+          </motion.div>
+          
+          <div className="space-y-3">
+            <h3 className="text-2xl font-bold">Feedback Submitted!</h3>
+            <p className="mx-auto max-w-sm text-muted-foreground">
+              Thank you for rating {service?.name}. Your voice goes straight to the campus administration desk.
             </p>
           </div>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setSubmitted(false);
-              setStep(0);
-              setSelectedService(null);
-              setRatings({});
-              setOverallSatisfaction(0);
-              setComment("");
-              setIsAnonymous(false);
-            }}
-          >
-            Submit Another Response
-          </Button>
+
+          <div className="flex w-full flex-col gap-3 pt-4 sm:flex-row sm:justify-center">
+            <Button
+              variant="default"
+              className="gap-2 bg-primary"
+              onClick={() => router.push('/impact')}
+            >
+              <Megaphone className="h-4 w-4" />
+              See Your Impact
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setSubmitted(false);
+                setSelectedService(null);
+                setRatings({});
+                setOverallSatisfaction(0);
+                setComment("");
+                setIsAnonymous(false);
+              }}
+            >
+              Submit Another
+            </Button>
+          </div>
         </CardContent>
       </Card>
     );
   }
 
   return (
-    <Card className="mx-auto max-w-xl overflow-hidden">
-      <CardHeader className="border-b border-border/50 pb-6">
-        {/* Step indicator */}
-        <div className="mb-6 flex items-center justify-between">
-          {STEPS.map((label, i) => (
-            <div key={i} className="flex items-center">
-              <div className="flex flex-col items-center gap-1.5">
-                <div
-                  className={cn(
-                    "flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all",
-                    i < step
-                      ? "bg-primary text-primary-foreground"
-                      : i === step
-                        ? "bg-primary text-primary-foreground ring-4 ring-primary/20"
-                        : "bg-muted text-muted-foreground"
-                  )}
-                >
-                  {i < step ? <Check className="h-4 w-4" /> : i + 1}
-                </div>
-                <span
-                  className={cn(
-                    "hidden text-xs font-medium sm:block",
-                    i === step ? "text-foreground" : "text-muted-foreground"
-                  )}
-                >
-                  {label}
-                </span>
-              </div>
-              {i < STEPS.length - 1 && (
-                <div
-                  className={cn(
-                    "mx-2 h-0.5 w-12 rounded-full sm:w-16 lg:w-24",
-                    i < step ? "bg-primary" : "bg-border"
-                  )}
-                />
-              )}
-            </div>
-          ))}
+    <div className="mx-auto max-w-2xl space-y-8">
+      {/* 1. SELECTION */}
+      <div className="space-y-4">
+        <div className="space-y-1">
+          <h2 className="text-lg font-semibold">1. Which service are you rating?</h2>
+          <p className="text-sm text-muted-foreground">Select a campus facility or department below.</p>
         </div>
+        <ServiceSelector
+          selected={selectedService}
+          onChange={setSelectedService}
+        />
+      </div>
 
-        <CardTitle className="text-lg">
-          {step === 0 && "Choose a Service"}
-          {step === 1 && `Rate: ${service?.name}`}
-          {step === 2 && "Add an Optional Comment"}
-          {step === 3 && "Review & Submit"}
-        </CardTitle>
-        <CardDescription>
-          {step === 0 &&
-            "Select the campus service you'd like to provide feedback for"}
-          {step === 1 && "Rate each aspect from 1 (poor) to 5 (excellent)"}
-          {step === 2 && "Add context in your own words and choose privacy"}
-          {step === 3 && "Review your ratings before final submission"}
-        </CardDescription>
-
-        {step >= 1 && service && (
-          <div className="mt-4 space-y-2 rounded-lg border bg-muted/30 p-3">
-            <div className="flex items-center justify-between text-xs">
-              <span className="font-medium">Progress</span>
-              <span className="text-muted-foreground">
-                {answeredCount} / {totalQuestions} questions answered
-              </span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-border">
-              <div
-                className="h-full rounded-full bg-primary transition-all"
-                style={{ width: `${Math.min(progressPercent, 100)}%` }}
-              />
-            </div>
-          </div>
-        )}
-      </CardHeader>
-
-      <CardContent className="space-y-6 p-6">
-        {/* Step 0 */}
-        {step === 0 && (
-          <ServiceSelector
-            selected={selectedService}
-            onChange={setSelectedService}
-          />
-        )}
-
-        {/* Step 1 */}
-        {step === 1 && service && (
-          <div className="space-y-1">
-            <div className="mb-4 rounded-xl border bg-muted/20 p-3 text-xs text-muted-foreground">
-              <p className="font-medium text-foreground">Rating Guide</p>
-              <p className="mt-1">1 = Poor, 2 = Fair, 3 = Average, 4 = Good, 5 = Excellent</p>
-            </div>
-            <div className="divide-y divide-border/50 overflow-hidden rounded-xl border">
-              {service.questions.map((q) => (
-                <div key={q.id} className="bg-card px-4">
+      <AnimatePresence>
+        {service && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            className="space-y-8"
+          >
+            {/* 2. RATING */}
+            <div className="space-y-4 pt-4 border-t border-border/50">
+              <div className="space-y-1">
+                <h2 className="text-lg font-semibold">2. How was your experience with {service.name}?</h2>
+                <p className="text-sm text-muted-foreground">Tap the stars to rate.</p>
+              </div>
+              
+              <div className="divide-y divide-border/50 overflow-hidden rounded-xl border bg-card">
+                {service.questions.map((q) => (
+                  <div key={q.id} className="p-4 sm:px-6">
+                    <RatingInput
+                      label={q.label}
+                      value={ratings[q.id] ?? 0}
+                      onChange={(v) => setRatings((r) => ({ ...r, [q.id]: v }))}
+                      required
+                    />
+                  </div>
+                ))}
+                <div className="bg-muted/30 p-4 sm:px-6">
                   <RatingInput
-                    label={q.label}
-                    value={ratings[q.id] ?? 0}
-                    onChange={(v) =>
-                      setRatings((r) => ({ ...r, [q.id]: v }))
-                    }
+                    label="Overall Satisfaction"
+                    value={overallSatisfaction}
+                    onChange={setOverallSatisfaction}
                     required
                   />
                 </div>
-              ))}
-              <div className="bg-muted/30 px-4">
-                <RatingInput
-                  label="Overall Satisfaction"
-                  value={overallSatisfaction}
-                  onChange={setOverallSatisfaction}
-                  required
-                />
               </div>
             </div>
-          </div>
-        )}
 
-        {/* Step 2 */}
-        {step === 2 && (
-          <div className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                Comments (optional)
-              </label>
-              <textarea
-                rows={5}
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Share additional thoughts or suggestions..."
-                className="w-full resize-none rounded-xl border border-input bg-transparent px-4 py-3 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              />
-            </div>
-
-            <div className="rounded-xl border bg-muted/20 p-3">
-              <label className="flex cursor-pointer items-start gap-3">
-                <input
-                  type="checkbox"
-                  checked={isAnonymous}
-                  onChange={(e) => setIsAnonymous(e.target.checked)}
-                  className="mt-1 h-4 w-4 rounded border-input"
+            {/* 3. DETAILS & SUBMIT */}
+            <div className="space-y-4 pt-4 border-t border-border/50">
+              <div className="space-y-1">
+                <h2 className="text-lg font-semibold">3. Any extra thoughts? (Optional)</h2>
+              </div>
+              
+              <div className="space-y-4">
+                <Textarea
+                  rows={4}
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Tell us exactly what went right or wrong..."
+                  className="w-full resize-none rounded-xl border border-input bg-card px-4 py-3 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                 />
-                <div className="space-y-1">
-                  <p className="flex items-center gap-1 text-sm font-medium">
-                    <Shield className="h-4 w-4" />
-                    Submit anonymously
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Your name and ID will not be attached to this response.
-                  </p>
+
+                <div className="rounded-xl border bg-muted/20 p-4">
+                  <label className="flex cursor-pointer items-start gap-3">
+                    <Checkbox
+                      checked={isAnonymous}
+                      onCheckedChange={(checked) => setIsAnonymous(checked === true)}
+                      className="mt-1"
+                    />
+                    <div className="space-y-1">
+                      <p className="flex items-center gap-1.5 text-sm font-medium">
+                        <Shield className="h-4 w-4 text-primary" />
+                        Submit completely anonymously
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Your identity will be hidden from administrators.
+                      </p>
+                    </div>
+                  </label>
                 </div>
-              </label>
-            </div>
-          </div>
-        )}
 
-        {/* Step 3 */}
-        {step === 3 && (
-          <div className="space-y-6">
-            <div className="space-y-3 rounded-xl border bg-muted/30 p-4">
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Service</span>
-                <span className="font-medium">{service?.name}</span>
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Overall Score</span>
-                <span className="font-semibold">
-                  {overallSatisfaction} / 5
-                </span>
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Questions Rated</span>
-                <span className="font-medium">
-                  {service?.questions.length} categories
-                </span>
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Privacy</span>
-                <span className="font-medium">{isAnonymous ? "Anonymous" : "Named"}</span>
+                <Button
+                  size="lg"
+                  className="w-full gap-2 text-base font-semibold shadow-sm"
+                  onClick={handleSubmit}
+                  disabled={loading || !isValid}
+                >
+                  <Send className="h-5 w-5" />
+                  {loading ? "Submitting..." : "Submit Feedback"}
+                </Button>
+                
+                {!isValid && (
+                  <p className="text-center text-xs text-muted-foreground">
+                    Please complete all ratings above to submit.
+                  </p>
+                )}
               </div>
             </div>
-            {comment && (
-              <div className="rounded-xl border p-4">
-                <p className="mb-2 text-xs font-medium text-muted-foreground">Comment</p>
-                <p className="text-sm">{comment}</p>
-              </div>
-            )}
-          </div>
+          </motion.div>
         )}
-
-        {/* Navigation */}
-        <div className="flex items-center justify-between pt-2">
-          <Button
-            variant="ghost"
-            onClick={() => setStep((s) => s - 1)}
-            disabled={step === 0}
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back
-          </Button>
-
-          {step < 3 ? (
-            <Button
-              onClick={() => setStep((s) => s + 1)}
-              disabled={step === 0 ? !canProceedStep0 : step === 1 ? !canProceedStep1 : false}
-              className="gap-2"
-            >
-              Continue
-              <ArrowRight className="h-4 w-4" />
-            </Button>
-          ) : (
-            <Button
-              onClick={handleSubmit}
-              disabled={loading}
-              className="gap-2"
-            >
-              <Send className="h-4 w-4" />
-              {loading ? "Submitting..." : "Submit Feedback"}
-            </Button>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+      </AnimatePresence>
+    </div>
   );
 }

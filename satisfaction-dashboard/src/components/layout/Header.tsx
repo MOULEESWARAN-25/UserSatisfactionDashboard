@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect, useRef } from "react";
 import {
@@ -151,10 +151,11 @@ export function Header({ title, description }: HeaderProps) {
                   className="absolute right-0 top-full mt-2 w-64 rounded-2xl border border-border/60 bg-popover p-1.5 shadow-xl shadow-black/5"
                 >
                   {results.map((r) => (
-                    <button
+                    <Button
                       key={r.href}
+                      variant="ghost"
                       onClick={() => { router.push(r.href); setQuery(""); setOpen(false); }}
-                      className="flex w-full items-center gap-3 rounded-xl px-3 py-2 text-left transition-colors hover:bg-muted"
+                      className="flex h-auto w-full items-center gap-3 rounded-xl px-3 py-2 text-left justify-start"
                     >
                       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-muted">
                         <r.icon className="h-3.5 w-3.5 text-muted-foreground" />
@@ -163,7 +164,7 @@ export function Header({ title, description }: HeaderProps) {
                         <p className="text-sm font-medium leading-tight">{r.title}</p>
                         <p className="text-xs text-muted-foreground">{r.description}</p>
                       </div>
-                    </button>
+                    </Button>
                   ))}
                 </motion.div>
               )}

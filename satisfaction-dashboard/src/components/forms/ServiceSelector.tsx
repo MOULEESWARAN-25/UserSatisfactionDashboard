@@ -2,6 +2,7 @@
 
 import { SERVICES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import {
   UtensilsCrossed,
   BookOpen,
@@ -33,13 +34,13 @@ export function ServiceSelector({ selected, onChange }: ServiceSelectorProps) {
         const isSelected = selected === service.id;
 
         return (
-          <button
+          <Button
             key={service.id}
             type="button"
+            variant="ghost"
             onClick={() => onChange(service.id)}
             className={cn(
-              "group relative flex flex-col items-center gap-3 rounded-xl border p-5 text-center transition-all",
-              "hover:border-primary/50 hover:shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              "group relative flex h-auto flex-col items-center gap-3 rounded-xl border p-5 text-center transition-all hover:border-primary/50 hover:shadow-sm",
               isSelected
                 ? "border-primary bg-primary/5 shadow-sm"
                 : "border-border bg-card hover:bg-accent/50"
@@ -61,7 +62,7 @@ export function ServiceSelector({ selected, onChange }: ServiceSelectorProps) {
             {isSelected && (
               <div className="absolute right-2 top-2 h-2 w-2 rounded-full bg-primary" />
             )}
-          </button>
+          </Button>
         );
       })}
     </div>

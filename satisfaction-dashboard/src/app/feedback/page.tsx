@@ -165,18 +165,15 @@ export default function FeedbackPage() {
                     <Star className="h-3.5 w-3.5" /> Score:
                   </span>
                   {SCORE_FILTERS.map((f) => (
-                    <button
+                    <Button
                       key={f.value}
+                      variant={scoreFilter === f.value ? "default" : "outline"}
+                      size="sm"
+                      className="rounded-full"
                       onClick={() => { setScoreFilter(f.value); setPage(1); }}
-                      className={cn(
-                        "rounded-full px-3 py-1 text-xs font-medium transition-all",
-                        scoreFilter === f.value
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-background border border-border hover:bg-muted"
-                      )}
                     >
                       {f.label}
-                    </button>
+                    </Button>
                   ))}
                   <div className="ml-auto min-w-[170px]">
                     <select

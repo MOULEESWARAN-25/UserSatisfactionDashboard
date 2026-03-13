@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { type ComponentType } from "react";
 
@@ -33,14 +34,14 @@ const ADMIN_ITEMS: SidebarItem[] = [
   { label: "Services", href: "/services", icon: Grid3x3 },
   { label: "Reports", href: "/reports", icon: FileText },
   { label: "Feedback", href: "/feedback", icon: MessageSquare },
-  { label: "Impact", href: "/announcements", icon: Megaphone },
+  { label: "Impact", href: "/impact", icon: Megaphone },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
 const STUDENT_ITEMS: SidebarItem[] = [
   { label: "Submit Feedback", href: "/feedback/submit", icon: MessageSquare },
   { label: "My Feedback", href: "/feedback/my", icon: FileText },
-  { label: "Announcements", href: "/announcements", icon: Megaphone },
+  { label: "Impact", href: "/impact", icon: Megaphone },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
@@ -76,7 +77,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
     <aside
       className={cn(
         "relative hidden h-screen shrink-0 border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-all duration-200 lg:flex lg:flex-col",
-        isOpen ? "w-[300px]" : "w-[64px]"
+        isOpen ? "w-64" : "w-[64px]"
       )}
     >
       {isOpen ? (
@@ -90,14 +91,16 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
                 <p className="truncate text-base font-semibold text-sidebar-foreground">{user?.name ?? "User"}</p>
                 <p className="truncate text-xs capitalize text-sidebar-foreground/60">{roleLabel}</p>
               </div>
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 type="button"
                 onClick={onToggle}
-                className="inline-flex h-7 w-7 items-center justify-center rounded-md text-sidebar-foreground/70 transition-colors hover:bg-muted hover:text-sidebar-foreground"
+                className="h-7 w-7 rounded-md text-sidebar-foreground/70 transition-colors hover:bg-muted hover:text-sidebar-foreground"
                 aria-label="Collapse sidebar"
               >
                 <ChevronLeft className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
           </div>
 
@@ -137,28 +140,32 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
                 <p className="truncate text-sm font-semibold text-sidebar-foreground">{user?.name ?? "User"}</p>
                 <p className="truncate text-xs capitalize text-sidebar-foreground/60">{roleLabel}</p>
                 </div>
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 type="button"
                 onClick={handleLogout}
-                className="inline-flex h-7 w-7 items-center justify-center rounded-md text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                className="h-7 w-7 rounded-md text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
                 aria-label="Sign out"
               >
                 <LogOut className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
           </div>
         </>
       ) : (
         <>
           <div className="flex items-center justify-center p-2.5">
-            <button
+            <Button
+              variant="outline"
+              size="icon"
               type="button"
               onClick={onToggle}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-sidebar-border bg-card/40 text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+              className="h-10 w-10 border-sidebar-border bg-card/40 text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
               aria-label="Expand sidebar"
             >
               <ChevronRight className="h-4 w-4" />
-            </button>
+            </Button>
           </div>
 
           <div className="px-2 pb-2 pt-1">
@@ -184,14 +191,16 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
           <div className="mt-auto p-3">
             <div className="flex justify-center">
-              <button
+              <Button
+                variant="outline"
+                size="icon"
                 type="button"
                 onClick={onToggle}
                 title={user?.name ?? "User"}
-                className="inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-md border border-sidebar-border bg-card/40 text-xs font-semibold text-sidebar-foreground transition-colors hover:bg-sidebar-accent"
+                className="h-10 w-10 overflow-hidden border-sidebar-border bg-card/40 text-sidebar-foreground hover:bg-sidebar-accent"
               >
                 <ChevronsUpDown className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
           </div>
         </>

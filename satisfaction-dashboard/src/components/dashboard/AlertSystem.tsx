@@ -117,16 +117,14 @@ function FilterBadge({
   variant: "default" | "secondary" | "success" | "outline";
 }) {
   return (
-    <button
+    <Button
+      variant={active ? "default" : "outline"}
+      size="sm"
       onClick={onClick}
-      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-        active
-          ? "bg-blue-600 text-white"
-          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-      }`}
+      className="rounded-full"
     >
       {label} ({count})
-    </button>
+    </Button>
   );
 }
 

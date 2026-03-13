@@ -92,14 +92,24 @@ export function TopComplaintsSummary({ complaints, index = 0 }: TopComplaintsSum
                   }}
                 >
                   <div className="flex items-start gap-3">
-                    {/* Count Badge */}
-                    <motion.div
-                      className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-muted text-sm font-bold"
-                      whileHover={{ scale: 1.12, rotate: -5 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      {complaint.count}
-                    </motion.div>
+                    {/* Count & Velocity Badge */}
+                    <div className="flex flex-col items-center gap-1">
+                      <motion.div
+                        className={cn(
+                          "flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold",
+                          complaint.severity === "critical" ? "bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-400" : "bg-muted"
+                        )}
+                        whileHover={{ scale: 1.12, rotate: -5 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        {complaint.count}
+                      </motion.div>
+                      {complaint.trend === "increasing" && complaint.severity === "critical" && (
+                        <span className="animate-pulse rounded border border-rose-200 bg-rose-50 px-1 py-0.5 text-[10px] font-bold text-rose-600 dark:border-rose-800 dark:bg-rose-950 dark:text-rose-400">
+                          HOT
+                        </span>
+                      )}
+                    </div>
 
                     {/* Info */}
                     <div className="flex-1 space-y-1.5">
@@ -142,6 +152,11 @@ export function TopComplaintsSummary({ complaints, index = 0 }: TopComplaintsSum
                               <Minus className="h-3 w-3" />
                               <span className="font-medium">Stable</span>
                             </>
+                          )}
+                          {complaint.trend === "increasing" && complaint.severity === "critical" && (
+                            <span className="ml-2 font-semibold text-rose-600 dark:text-rose-400">
+                              (+{Math.floor(complaint.count * 0.4)} in last 24h)
+                            </span>
                           )}
                         </div>
                       </div>

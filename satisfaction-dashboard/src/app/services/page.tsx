@@ -178,20 +178,20 @@ function EditModal({ service, onClose, onSave }: EditModalProps) {
             <Label>Icon</Label>
             <div className="flex flex-wrap gap-2">
               {ICON_OPTIONS.map((opt) => (
-                <button
+                <Button
                   key={opt.key}
                   type="button"
+                  variant={icon === opt.key ? "secondary" : "outline"}
+                  size="icon"
                   onClick={() => setIcon(opt.key)}
                   className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-xl border transition-all",
-                    icon === opt.key
-                      ? "border-primary bg-primary/10 ring-1 ring-primary"
-                      : "border-border hover:bg-muted"
+                    "h-10 w-10 rounded-xl transition-all",
+                    icon === opt.key ? "border-primary ring-1 ring-primary" : ""
                   )}
                   title={opt.label}
                 >
                   <opt.icon className="h-5 w-5" />
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -344,20 +344,20 @@ function AddModal({ onClose, onAdd }: AddModalProps) {
             <Label>Icon</Label>
             <div className="flex flex-wrap gap-2">
               {ICON_OPTIONS.map((opt) => (
-                <button
+                <Button
                   key={opt.key}
                   type="button"
+                  variant={icon === opt.key ? "secondary" : "outline"}
+                  size="icon"
                   onClick={() => setIcon(opt.key)}
                   className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-xl border transition-all",
-                    icon === opt.key
-                      ? "border-primary bg-primary/10 ring-1 ring-primary"
-                      : "border-border hover:bg-muted"
+                    "h-10 w-10 rounded-xl transition-all",
+                    icon === opt.key ? "border-primary ring-1 ring-primary" : ""
                   )}
                   title={opt.label}
                 >
                   <opt.icon className="h-5 w-5" />
-                </button>
+                </Button>
               ))}
             </div>
           </div>

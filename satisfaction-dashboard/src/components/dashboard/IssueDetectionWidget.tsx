@@ -3,7 +3,8 @@
 import { useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { AlertCircle, TrendingDown, AlertTriangle, Info, CheckCircle2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AlertCircle, TrendingDown, AlertTriangle, Info, CheckCircle2, Zap, ArrowRight } from "lucide-react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import type { DetectedIssue, IssueSeverity } from "@/types/analytics";
 import { cn } from "@/lib/utils";
@@ -191,25 +192,39 @@ export function IssueDetectionWidget({ issues, index = 0 }: IssueDetectionWidget
                             </motion.div>
                           </div>
                           <p className="text-xs text-muted-foreground">{issue.description}</p>
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                            <span className="font-medium">{issue.serviceName}</span>
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                            <span className="font-medium text-foreground">{issue.serviceName}</span>
                             <span>•</span>
                             <span
                               className={cn(
-                                "font-semibold",
+                                "font-semibold flex items-center gap-1",
                                 issue.changePercent < 0 ? "text-rose-600 dark:text-rose-400" : ""
                               )}
                             >
-                              {issue.changePercent > 0 ? "+" : ""}
-                              {issue.changePercent.toFixed(1)}%
+                              <TrendingDown className="h-3 w-3" />
+                              {Math.abs(issue.changePercent).toFixed(1)}% drop
                             </span>
                             {issue.assignment?.assignedTo && (
                               <>
                                 <span>•</span>
-                                <span>Assigned to: {issue.assignment?.assignedTo?.name}</span>
+                                <span>Assigned: {issue.assignment.assignedTo.name}</span>
                               </>
                             )}
                           </div>
+                          
+                          {/* AUTOMATED ACTION BLOCK */}
+                          {(issue.severity === "critical" || issue.severity === "high") && issue.status === "open" && (
+                            <div className="mt-3 flex items-center justify-between rounded-lg border border-primary/10 bg-primary/5 px-3 py-2">
+                              <div className="flex items-center gap-2 text-xs font-medium text-primary">
+                                <Zap className="h-3.5 w-3.5" />
+                                <span>Quick Action: Auto-Assign & Notify</span>
+                              </div>
+                              <Button size="sm" className="h-7 rounded-full px-3 text-xs font-semibold transition-transform hover:scale-105 active:scale-95">
+                                Execute
+                                <ArrowRight className="h-3 w-3 ml-1" />
+                              </Button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </motion.div>

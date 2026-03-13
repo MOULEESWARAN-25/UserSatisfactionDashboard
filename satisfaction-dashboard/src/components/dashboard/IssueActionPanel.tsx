@@ -269,11 +269,12 @@ function IssueCard({
       } ${isExpanded ? "shadow-lg" : "hover:shadow-md"}`}
     >
       {/* Issue Header */}
-      <button
+      <Button
+        variant="ghost"
         onClick={onToggle}
-        className="w-full p-4 text-left"
+        className="h-auto w-full rounded-none px-4 py-4 text-left justify-start hover:bg-muted/30"
       >
-        <div className="flex items-start justify-between">
+        <div className="flex w-full items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-2 mb-2">
               <Badge className={`${severityColors[issue.severity]} text-xs`}>
@@ -326,7 +327,7 @@ function IssueCard({
           
           <ChevronRight className={`w-5 h-5 transition-transform ${isExpanded ? "rotate-90" : ""}`} />
         </div>
-      </button>
+      </Button>
 
       {/* Expanded Details */}
       {isExpanded && (

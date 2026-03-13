@@ -118,7 +118,7 @@ export const MOCK_FEEDBACK: FeedbackRecord[] = [
     collegeId: "college-default-001",
     ratings: { quality: 5, variety: 4, cleanliness: 5, value: 4 },
     overallSatisfaction: 5,
-    comment: "Great food options and very clean environment!",
+    comment: "The new multi-cuisine menu in the main mess is amazing, but the queues are too long during the 12:40 PM rush.",
     submittedAt: getRecentTimestamp(0, 2),
   },
   {
@@ -130,7 +130,7 @@ export const MOCK_FEEDBACK: FeedbackRecord[] = [
     collegeId: "college-default-001",
     ratings: { resources: 5, environment: 5, staff: 4, hours: 5 },
     overallSatisfaction: 5,
-    comment: "Excellent study environment with great resources.",
+    comment: "The 5-story AC library is perfectly maintained. Huge thanks to the staff for keeping the digital library open late during internals.",
     submittedAt: getRecentTimestamp(0, 5),
   },
   {
@@ -142,7 +142,7 @@ export const MOCK_FEEDBACK: FeedbackRecord[] = [
     collegeId: "college-default-001",
     ratings: { usability: 3, content: 4, support: 3, reliability: 2 },
     overallSatisfaction: 3,
-    comment: "Platform could be more stable during peak hours.",
+    comment: "The placement training portal crashed right before the TCS aptitude mock test. Took 40 minutes to get back in.",
     submittedAt: getRecentTimestamp(0, 8),
   },
   {
@@ -154,7 +154,7 @@ export const MOCK_FEEDBACK: FeedbackRecord[] = [
     collegeId: "college-default-001",
     ratings: { cleanliness: 4, amenities: 3, security: 5, maintenance: 4 },
     overallSatisfaction: 4,
-    comment: "Good security but needs better WiFi coverage.",
+    comment: "The Wi-Fi in Emerald Block keeps dropping connection. The 500 MBPS fiber optic is fast, but the routers in our corridor randomly restart.",
     submittedAt: getRecentTimestamp(1, 3),
   },
   {
@@ -166,7 +166,7 @@ export const MOCK_FEEDBACK: FeedbackRecord[] = [
     collegeId: "college-default-001",
     ratings: { variety: 5, organization: 5, communication: 4, timing: 4 },
     overallSatisfaction: 5,
-    comment: "Loved the tech fest! More events like this please.",
+    comment: "The hackathon at Vedanayagam Auditorium was flawless. The AC was perfect and the 5S-certified workspace made a huge difference.",
     submittedAt: getRecentTimestamp(1, 6),
   },
   {
@@ -178,7 +178,7 @@ export const MOCK_FEEDBACK: FeedbackRecord[] = [
     collegeId: "college-default-001",
     ratings: { quality: 4, variety: 3, cleanliness: 4, value: 3 },
     overallSatisfaction: 4,
-    comment: "Would appreciate more vegetarian options.",
+    comment: "The main canteen closes during evening labs. We need hot food options available near the academic blocks after 6 PM.",
     submittedAt: getRecentTimestamp(1, 12),
   },
   {
@@ -190,7 +190,7 @@ export const MOCK_FEEDBACK: FeedbackRecord[] = [
     collegeId: "college-default-001",
     ratings: { resources: 4, environment: 5, staff: 5, hours: 4 },
     overallSatisfaction: 4,
-    comment: "Staff is very helpful. Extended hours during exams would be great.",
+    comment: "The digital library has amazing e-journals, but half the computers in the IoT lab are missing the latest Arduino IDE updates.",
     submittedAt: getRecentTimestamp(2, 1),
   },
   {
@@ -202,7 +202,7 @@ export const MOCK_FEEDBACK: FeedbackRecord[] = [
     collegeId: "college-default-001",
     ratings: { usability: 4, content: 5, support: 4, reliability: 3 },
     overallSatisfaction: 4,
-    comment: "Course content is excellent, minor technical issues.",
+    comment: "The learning management system keeps logging me out during the programming lab exams. Extremely frustrating.",
     submittedAt: getRecentTimestamp(2, 4),
   },
   {
@@ -214,7 +214,7 @@ export const MOCK_FEEDBACK: FeedbackRecord[] = [
     collegeId: "college-default-001",
     ratings: { cleanliness: 3, amenities: 3, security: 4, maintenance: 3 },
     overallSatisfaction: 3,
-    comment: "Maintenance requests take too long to resolve.",
+    comment: "The hot water in Narmadha Girls Hostel runs out by 7:30 AM every single morning. Maintenance ticket #4402 ignored.",
     submittedAt: getRecentTimestamp(2, 9),
   },
   {
@@ -226,7 +226,7 @@ export const MOCK_FEEDBACK: FeedbackRecord[] = [
     collegeId: "college-default-001",
     ratings: { variety: 4, organization: 4, communication: 5, timing: 5 },
     overallSatisfaction: 4,
-    comment: "Good events but could use more weekend activities.",
+    comment: "The inter-college sports meet at the 400m athletic track was great, but we needed more seating for the spectators.",
     submittedAt: getRecentTimestamp(3, 2),
   },
   {
@@ -238,7 +238,7 @@ export const MOCK_FEEDBACK: FeedbackRecord[] = [
     collegeId: "college-default-001",
     ratings: { quality: 3, variety: 4, cleanliness: 4, value: 2 },
     overallSatisfaction: 3,
-    comment: "Prices have gone up but quality hasn't improved.",
+    comment: "The Axis Bank ATM near the main canteen has been out of cash for two days, and the UPI network in the food court is very slow.",
     submittedAt: getRecentTimestamp(3, 7),
   },
   {
@@ -250,7 +250,7 @@ export const MOCK_FEEDBACK: FeedbackRecord[] = [
     collegeId: "college-default-001",
     ratings: { resources: 5, environment: 4, staff: 4, hours: 3 },
     overallSatisfaction: 4,
-    comment: "Need more power outlets in study areas.",
+    comment: "Can we extend the library hours until midnight during the semester end examinations? The hostel rooms get too noisy.",
     submittedAt: getRecentTimestamp(4, 3),
   },
 ];
@@ -349,8 +349,8 @@ export const DEFAULT_USERS = {
 export const MOCK_DETECTED_ISSUES: DetectedIssue[] = [
   {
     id: "ISS001",
-    title: "Hostel WiFi satisfaction dropped significantly",
-    description: "WiFi connectivity satisfaction decreased by 35% in hostel areas over the past week",
+    title: "Emerald Hostel Wi-Fi dropping in C Wing",
+    description: "Students report internet drops every 10 mins during evening hours, preventing placement prep.",
     serviceId: "hostel",
     serviceName: "Hostel",
     servicesAffected: ["Hostel"],
@@ -370,8 +370,8 @@ export const MOCK_DETECTED_ISSUES: DetectedIssue[] = [
   },
   {
     id: "ISS002",
-    title: "Cafeteria waiting time complaints increasing",
-    description: "Multiple complaints about long waiting times during lunch hours",
+    title: "Main Canteen juice counter lines exceeding 35 minutes",
+    description: "Lunch rush bottleneck at the fresh juice station causing students to bypass the main dining halls.",
     serviceId: "cafeteria",
     serviceName: "Cafeteria",
     servicesAffected: ["Cafeteria"],
@@ -391,8 +391,8 @@ export const MOCK_DETECTED_ISSUES: DetectedIssue[] = [
   },
   {
     id: "ISS003",
-    title: "Library seating availability below threshold",
-    description: "Seating space satisfaction dropped below 3.5 during exam period",
+    title: "Apple Lab Macintoshes missing Xcode updates",
+    description: "20+ Macs in the specialized Apple Lab lack the latest Xcode software, blocking iOS development projects.",
     serviceId: "library",
     serviceName: "Library",
     servicesAffected: ["Library"],
@@ -412,8 +412,8 @@ export const MOCK_DETECTED_ISSUES: DetectedIssue[] = [
   },
   {
     id: "ISS004",
-    title: "Online course platform slow during peak hours",
-    description: "Platform usability ratings declining, multiple reports of slowness",
+    title: "Placement Portal crashing repeatedly",
+    description: "The internal placement training portal keeps throwing 500 errors during heavy mock-test loads.",
     serviceId: "online-course",
     serviceName: "Online Course Portal",
     servicesAffected: ["Online Course"],
@@ -433,8 +433,8 @@ export const MOCK_DETECTED_ISSUES: DetectedIssue[] = [
   },
   {
     id: "ISS005",
-    title: "Cafeteria menu variety concerns",
-    description: "Decreasing satisfaction with menu variety and vegetarian options",
+    title: "Lack of Jain food options in Main Mess",
+    description: "Students reporting zero hot Jain food options available after 7 PM in the general dining halls.",
     serviceId: "cafeteria",
     serviceName: "Cafeteria",
     servicesAffected: ["Cafeteria"],
@@ -512,49 +512,49 @@ export const MOCK_PARTICIPATION: ParticipationMetrics = {
 
 export const MOCK_TOP_COMPLAINTS: ComplaintSummary[] = [
   {
-    issue: "WiFi connectivity issues",
+    issue: "Hostel fiber optic Wi-Fi constantly disconnecting",
     count: 87,
     services: ["Hostel", "Library"],
     severity: "critical",
     trend: "increasing",
   },
   {
-    issue: "Long waiting times",
+    issue: "Biometric punching failure at Main Mess",
     count: 64,
     services: ["Cafeteria"],
     severity: "high",
     trend: "increasing",
   },
   {
-    issue: "Platform performance during peak hours",
+    issue: "College ERP authentication failures",
     count: 52,
     services: ["Online Course Portal"],
     severity: "high",
     trend: "stable",
   },
   {
-    issue: "Limited seating availability",
+    issue: "AC Library study halls permanently booked",
     count: 48,
-    services: ["Library", "Cafeteria"],
+    services: ["Library"],
     severity: "medium",
     trend: "increasing",
   },
   {
-    issue: "Menu variety and options",
+    issue: "No hot snacks in Canteen after 7 PM",
     count: 41,
     services: ["Cafeteria"],
     severity: "medium",
     trend: "stable",
   },
   {
-    issue: "Maintenance response time",
+    issue: "Hot water missing in morning (Narmadha Hostel)",
     count: 35,
     services: ["Hostel"],
     severity: "medium",
     trend: "decreasing",
   },
   {
-    issue: "Extended hours needed",
+    issue: "IoT Lab computers missing Arduino software",
     count: 28,
     services: ["Library"],
     severity: "low",
@@ -1729,40 +1729,69 @@ export const MOCK_IMPROVEMENT_TIMELINES: ImprovementTimeline[] = [
     isPublic: true,
     studentViewCount: 245,
   },
+];
+
+export interface ImpactStory {
+  id: string;
+  serviceName: string;
+  date: string;
+  issueSummary: string;
+  studentComplaintQuote: string;
+  resolutionTitle: string;
+  resolutionDescription: string;
+  metrics: {
+    metricName: string;
+    beforeValue: string;
+    afterValue: string;
+    improvementPercent: number;
+  };
+}
+
+export const IMPACT_STORIES: ImpactStory[] = [
   {
-    issueId: "ISS-101",
-    issueTitle: "Library AC Not Working Efficiently",
-    serviceId: "library",
-    serviceName: "Library",
-    startDate: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-    targetCompletionDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
-    currentPhase: "implementing",
-    milestones: [
-      {
-        phase: "detected",
-        completedAt: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
-        completedBy: "System",
-      },
-      {
-        phase: "investigating",
-        completedAt: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
-        completedBy: "Facilities Manager",
-        notes: "HVAC system servicing overdue, filters clogged",
-      },
-      {
-        phase: "implementing",
-        notes: "HVAC maintenance scheduled for this week",
-      },
-    ],
-    initialMetrics: {
-      satisfactionScore: 4.5,
-      complaintCount: 12,
-      participationRate: 50.1,
-      measurementDate: new Date(Date.now() - 20 * 24 * 60 * 60 * 1000).toISOString(),
+    id: "impact-001",
+    serviceName: "Hostel",
+    date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+    issueSummary: "Emerald Hostel Wi-Fi constantly disconnecting in C Wing.",
+    studentComplaintQuote: "The fiber optic drops connection every 10 minutes. I can't even load the placement portal, let alone sit through an entire coding interview without getting kicked out.",
+    resolutionTitle: "Installed 4 New Commercial-Grade Access Points",
+    resolutionDescription: "We overhauled the network architecture in Emerald Hostel C Wing, installing four new high-capacity access points and doubling the dedicated bandwidth to that building.",
+    metrics: {
+      metricName: "Average Connection Drops (per user/day)",
+      beforeValue: "12",
+      afterValue: "1",
+      improvementPercent: 91,
     },
-    problemDescription:
-      "Multiple complaints about library temperature being uncomfortable during summer.",
-    isPublic: false,
+  },
+  {
+    id: "impact-002",
+    serviceName: "Cafeteria",
+    date: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000).toISOString(),
+    issueSummary: "Main Canteen juice counter lines exceeding 35 minutes.",
+    studentComplaintQuote: "The new fresh juice station is great, but waiting 35+ minutes during the 12:40 PM lunch rush means I'm constantly late for my post-lunch labs.",
+    resolutionTitle: "Opened Express Lane & Hired 3 Prep Staff",
+    resolutionDescription: "We opened a dedicated express lane for pre-packaged meals and hired 3 additional kitchen staff specifically to prep ingredients for the main juice station.",
+    metrics: {
+      metricName: "Peak Lunch Wait Time",
+      beforeValue: "35 mins",
+      afterValue: "8 mins",
+      improvementPercent: 77,
+    },
+  },
+  {
+    id: "impact-003",
+    serviceName: "Library",
+    date: new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString(),
+    issueSummary: "Apple Lab Macintoshes missing Xcode updates.",
+    studentComplaintQuote: "Half the Macs in the advanced Apple Lab don't have the latest version of Xcode installed. We can't compile our iOS projects here.",
+    resolutionTitle: "Deployed Automated Lab Image Update",
+    resolutionDescription: "IT completely re-imaged all 60 machines in the Apple Lab overnight, ensuring the latest macOS and Xcode development tools are locked into the default user profile.",
+    metrics: {
+      metricName: "Working Development Machines",
+      beforeValue: "32",
+      afterValue: "60",
+      improvementPercent: 87,
+    },
   },
 ];
 

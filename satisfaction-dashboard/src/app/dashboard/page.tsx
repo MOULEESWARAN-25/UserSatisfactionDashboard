@@ -6,12 +6,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { staggerContainer, staggerItem } from "@/lib/animations";
 import { AppShell } from "@/components/layout/AppShell";
 import { MetricCard } from "@/components/dashboard/MetricCard";
-import { ServiceFilter } from "@/components/dashboard/ServiceFilter";
+
 import { SatisfactionTrendChart } from "@/components/charts/SatisfactionTrendChart";
 import { ServiceHealthIndicator } from "@/components/dashboard/ServiceHealthIndicator";
 import { TopComplaintsSummary } from "@/components/dashboard/TopComplaintsSummary";
-import { ServiceComparisonChart } from "@/components/charts/ServiceComparisonChart";
-import { ImprovementAreasCard } from "@/components/charts/ImprovementAreasCard";
+import { SatisfactionOverview } from "@/components/dashboard/SatisfactionOverview";
+import { DepartmentPerformanceWidget } from "@/components/dashboard/DepartmentPerformanceWidget";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AdminOnly } from "@/components/auth/ProtectedRoute";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -36,7 +36,6 @@ const severityBadge: Record<string, string> = {
 };
 
 export default function DashboardPage() {
-  const [selectedService, setSelectedService] = useState("all");
   const [trendRange, setTrendRange] = useState<"7d" | "30d" | "semester" | "custom">("30d");
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
@@ -46,25 +45,10 @@ export default function DashboardPage() {
   useEffect(() => {
     setLoading(true);
     setTimeout(() => {
-      if (selectedService !== "all") {
-        const filtered = {
-          ...MOCK_ENHANCED_DASHBOARD,
-          detectedIssues: MOCK_ENHANCED_DASHBOARD.detectedIssues.filter(
-            (i) => i.serviceId === selectedService
-          ),
-          topComplaints: MOCK_ENHANCED_DASHBOARD.topComplaints.filter((c) =>
-            c.services?.some((s) =>
-              s.toLowerCase().includes(selectedService.replace("-", " "))
-            )
-          ),
-        };
-        setDashboard(filtered);
-      } else {
-        setDashboard(MOCK_ENHANCED_DASHBOARD);
-      }
+      setDashboard(MOCK_ENHANCED_DASHBOARD);
       setLoading(false);
     }, 280);
-  }, [selectedService]);
+  }, []);
 
   const participationRate = dashboard?.participation?.participationRate ?? 0;
   const criticalIssues = (dashboard?.detectedIssues ?? []).filter(
@@ -125,10 +109,7 @@ export default function DashboardPage() {
           initial="hidden"
           animate="visible"
         >
-          {/* Filter */}
-          <motion.div variants={staggerItem}>
-            <ServiceFilter selected={selectedService} onChange={setSelectedService} />
-          </motion.div>
+
 
           {/* KPI Row */}
           <motion.div variants={staggerItem} className="grid grid-cols-2 items-stretch gap-4 md:grid-cols-3 xl:grid-cols-5">
@@ -328,7 +309,7 @@ export default function DashboardPage() {
             )}
           </motion.div>
 
-          {/* Service Comparison + Improvement Areas */}
+          {/* Satisfaction Overview + Department Performance */}
           <motion.div variants={staggerItem} className="grid gap-4 lg:grid-cols-2">
             {loading ? (
               <>
@@ -337,8 +318,20 @@ export default function DashboardPage() {
               </>
             ) : (
               <>
-                <ServiceComparisonChart data={dashboard?.serviceBreakdown ?? []} index={4} />
-                <ImprovementAreasCard data={MOCK_ADVANCED_ANALYTICS.improvementAreas} index={5} />
+                <SatisfactionOverview
+                  data={dashboard?.serviceBreakdown?.map((s) => ({
+                    serviceId: s.serviceId,
+                    serviceName: s.serviceName,
+                    avgScore: s.avgScore,
+                    totalFeedback: s.totalFeedback,
+                    trend: s.trend ?? "stable",
+                  })) ?? []}
+                  index={4}
+                />
+                <DepartmentPerformanceWidget
+                  departments={dashboard?.departmentPerformance ?? []}
+                  index={5}
+                />
               </>
             )}
           </motion.div>

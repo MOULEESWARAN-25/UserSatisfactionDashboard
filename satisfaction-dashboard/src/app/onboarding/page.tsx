@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Building2, Mail, Phone, Globe, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface OnboardingStep {
   id: number;
@@ -390,22 +391,24 @@ export default function CollegeOnboardingPage() {
 
                     <div className="grid grid-cols-2 gap-3">
                       {defaultServices.map((service) => (
-                        <button
+                        <Button
                           key={service.id}
                           type="button"
+                          variant={collegeData.servicesEnabled.includes(service.id) ? "secondary" : "outline"}
                           onClick={() => toggleService(service.id)}
-                          className={`flex items-center gap-3 rounded-lg border-2 p-4 transition-all ${
+                          className={cn(
+                            "flex h-auto items-center gap-3 rounded-lg border-2 p-4 justify-start transition-all",
                             collegeData.servicesEnabled.includes(service.id)
                               ? "border-blue-600 bg-blue-50 dark:bg-blue-900/20"
                               : "border-gray-200 hover:border-gray-300 dark:border-gray-700 dark:hover:border-gray-600"
-                          }`}
+                          )}
                         >
                           <span className="text-2xl">{service.icon}</span>
                           <span className="text-sm font-medium">{service.name}</span>
                           {collegeData.servicesEnabled.includes(service.id) && (
                             <CheckCircle2 className="ml-auto h-5 w-5 text-blue-600" />
                           )}
-                        </button>
+                        </Button>
                       ))}
                     </div>
 
