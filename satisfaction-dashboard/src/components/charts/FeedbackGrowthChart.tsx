@@ -2,8 +2,8 @@
 
 import { motion } from "framer-motion";
 import {
-  AreaChart,
-  Area,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -28,11 +28,11 @@ interface FeedbackGrowthChartProps {
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload?.length) {
     return (
-      <div className="rounded-lg border border-border/50 bg-background px-3 py-2 shadow-xl">
-        <p className="mb-0.5 text-xs font-medium">{label}</p>
+      <div className="rounded-xl border border-border/50 bg-background/95 backdrop-blur px-4 py-3 shadow-2xl">
+        <p className="mb-1 text-xs font-semibold text-foreground">{label}</p>
         <p className="text-xs text-muted-foreground">
           Submissions:{" "}
-          <span className="font-semibold text-foreground">
+          <span className="font-bold text-foreground">
             {payload[0]?.value}
           </span>
         </p>
@@ -68,16 +68,10 @@ export function FeedbackGrowthChart({ data, index = 0 }: FeedbackGrowthChartProp
       <CardContent className="pb-4 pt-0">
         <div className="h-[200px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart
+            <LineChart
               data={data}
               margin={{ top: 8, right: 8, bottom: 0, left: -12 }}
             >
-              <defs>
-                <linearGradient id="countGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(var(--chart-1))" stopOpacity={0.2} />
-                  <stop offset="100%" stopColor="hsl(var(--chart-1))" stopOpacity={0} />
-                </linearGradient>
-              </defs>
               <CartesianGrid
                 strokeDasharray="3 3"
                 stroke="hsl(var(--border))"
@@ -96,22 +90,26 @@ export function FeedbackGrowthChart({ data, index = 0 }: FeedbackGrowthChartProp
                 tickLine={false}
                 tickMargin={8}
               />
-              <Tooltip content={<CustomTooltip />} />
-              <Area
+              <Tooltip content={<CustomTooltip />} cursor={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1, strokeDasharray: "4 4" }} />
+              <Line
                 type="monotone"
                 dataKey="count"
-                stroke="hsl(var(--chart-1))"
-                strokeWidth={2}
-                fill="url(#countGrad)"
-                dot={false}
+                stroke="#8b5cf6"
+                strokeWidth={2.5}
+                dot={{
+                  r: 4,
+                  fill: "#8b5cf6",
+                  stroke: "hsl(var(--background))",
+                  strokeWidth: 2,
+                }}
                 activeDot={{
-                  r: 5,
+                  r: 6,
                   strokeWidth: 2,
                   stroke: "hsl(var(--background))",
-                  fill: "hsl(var(--chart-1))",
+                  fill: "#8b5cf6",
                 }}
               />
-            </AreaChart>
+            </LineChart>
           </ResponsiveContainer>
         </div>
       </CardContent>

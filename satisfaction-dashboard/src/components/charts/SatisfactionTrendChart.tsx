@@ -117,7 +117,7 @@ export function SatisfactionTrendChart({ data, index = 0, toolbar }: Satisfactio
                   tickLine={false}
                   tickMargin={8}
                 />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={<CustomTooltip />} cursor={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1, strokeDasharray: "4 4" }} />
                 <Area
                   type="monotone"
                   dataKey="score"

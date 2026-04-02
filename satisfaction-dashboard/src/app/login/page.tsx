@@ -124,9 +124,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-slate-50 text-foreground selection:bg-primary/20">
+    <div className="relative min-h-screen overflow-hidden bg-background text-foreground selection:bg-primary/20">
       {/* Premium Animated Background */}
-      <div className="pointer-events-none absolute inset-0 bg-white" />
+      <div className="pointer-events-none absolute inset-0 bg-background" />
       <motion.div 
         animate={{ 
           scale: [1, 1.1, 1],
@@ -144,7 +144,7 @@ export default function LoginPage() {
         className="pointer-events-none absolute top-[20%] -right-[10%] h-[80vh] w-[80vh] rounded-full bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.12),transparent_60%)] blur-3xl mix-blend-multiply" 
       />
 
-      <header className="relative z-10 border-b border-border/40 bg-white/60 backdrop-blur-xl">
+      <header className="relative z-10 border-b border-border/40 bg-card/60 backdrop-blur-xl">
         <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-5 lg:px-8">
           <motion.div
             className="flex items-center gap-3"
@@ -156,13 +156,13 @@ export default function LoginPage() {
               <LifeBuoy className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-base font-bold tracking-tight text-slate-900">SatisfyIQ</p>
+              <p className="text-base font-bold tracking-tight text-foreground">SatisfyIQ</p>
               <p className="text-[11px] font-medium tracking-wide text-muted-foreground uppercase">Bannari Amman Institute</p>
             </div>
           </motion.div>
 
           <motion.div
-            className="hidden items-center gap-2 rounded-full border border-slate-200 bg-white/80 px-4 py-1.5 text-xs font-medium text-slate-600 shadow-sm md:flex backdrop-blur-md"
+            className="hidden items-center gap-2 rounded-full border border-border bg-card/80 px-4 py-1.5 text-xs font-medium text-muted-foreground shadow-sm md:flex backdrop-blur-md"
             initial={{ opacity: 0, x: 10 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.4, ease: "easeOut" }}
@@ -181,10 +181,10 @@ export default function LoginPage() {
           className="xl:py-8 space-y-8"
         >
           <div className="space-y-4">
-            <h1 className="text-4xl font-extrabold tracking-tight text-slate-900 lg:text-5xl xl:text-6xl lg:leading-[1.1]">
+            <h1 className="text-4xl font-extrabold tracking-tight text-foreground lg:text-5xl xl:text-6xl lg:leading-[1.1]">
               Elevating <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-indigo-600">student life</span> <br className="hidden lg:block" />at BIT Sathy
             </h1>
-            <p className="max-w-xl text-lg leading-relaxed text-slate-600">
+            <p className="max-w-xl text-lg leading-relaxed text-muted-foreground">
               The official centralized feedback command center. Track hostel Wi-Fi stability, cafeteria wait times, and academic resources in real-time.
             </p>
           </div>
@@ -196,13 +196,13 @@ export default function LoginPage() {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 + idx * 0.1, duration: 0.4, ease: "easeOut" }}
-                className="group rounded-2xl border border-slate-200/60 bg-white/70 backdrop-blur-md p-5 shadow-sm transition-all hover:shadow-md hover:bg-white"
+                className="group rounded-2xl border border-border/60 bg-card/70 backdrop-blur-md p-5 shadow-sm transition-all hover:shadow-md hover:bg-card"
               >
                 <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-white">
                   <point.icon className="h-5 w-5" />
                 </div>
-                <p className="text-sm font-bold text-slate-900">{point.title}</p>
-                <p className="mt-1.5 text-sm leading-relaxed text-slate-600">{point.desc}</p>
+                <p className="text-sm font-bold text-foreground">{point.title}</p>
+                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">{point.desc}</p>
               </motion.div>
             ))}
           </div>
@@ -224,11 +224,11 @@ export default function LoginPage() {
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, ease: "easeOut", delay: 0.2 }}
-          className="rounded-3xl border border-slate-200/50 bg-white/80 p-8 shadow-2xl shadow-slate-200/50 backdrop-blur-xl lg:p-10"
+          className="rounded-3xl border border-border/50 bg-card/80 p-8 shadow-2xl shadow-black/5 backdrop-blur-xl lg:p-10"
         >
           <div className="mb-8 space-y-2">
-            <h2 className="text-2xl font-bold tracking-tight text-slate-900">Welcome back</h2>
-            <p className="text-sm text-slate-500">Sign in to your SatisfyIQ account to continue.</p>
+            <h2 className="text-2xl font-bold tracking-tight text-foreground">Welcome back</h2>
+            <p className="text-sm text-muted-foreground">Sign in to your SatisfyIQ account to continue.</p>
           </div>
 
           <div className="mb-4 grid grid-cols-2 gap-2 rounded-lg bg-muted p-1">
@@ -269,11 +269,11 @@ export default function LoginPage() {
               transition={{ delay: 0.3, duration: 0.4 }}
               className="space-y-1.5"
             >
-              <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 {selectedRole === "student" ? "BIT Student ID" : "Admin ID"}
               </Label>
               <Input
-                className="h-11 bg-slate-50 border-slate-200 transition-colors focus-visible:bg-white"
+                className="h-11 bg-muted/50 border-border transition-colors focus-visible:bg-background"
                 value={userId}
                 placeholder={selectedRole === "student" ? "ex: STU2024001" : "ex: ADMIN001"}
                 onChange={(e) => {
@@ -289,11 +289,11 @@ export default function LoginPage() {
               transition={{ delay: 0.4, duration: 0.4 }}
               className="space-y-1.5"
             >
-              <Label className="text-xs font-semibold uppercase tracking-wider text-slate-500">Secure Password</Label>
+              <Label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Secure Password</Label>
               <div className="relative">
                 <Input
                   type={showPassword ? "text" : "password"}
-                  className="h-11 bg-slate-50 border-slate-200 pr-10 transition-colors focus-visible:bg-white"
+                  className="h-11 bg-muted/50 border-border pr-10 transition-colors focus-visible:bg-background"
                   value={password}
                   placeholder="••••••••"
                   onChange={(e) => {
@@ -308,7 +308,7 @@ export default function LoginPage() {
                   variant="ghost"
                   size="icon"
                   type="button"
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9 text-slate-400 hover:text-slate-600 hover:bg-transparent"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-transparent"
                   onClick={() => setShowPassword((prev) => !prev)}
                   tabIndex={-1}
                 >
@@ -325,7 +325,7 @@ export default function LoginPage() {
               <Button
                 onClick={handleLogin}
                 disabled={isLoading}
-                className="h-11 w-full gap-2 bg-slate-900 shadow-md hover:bg-slate-800 transition-all font-semibold"
+                className="h-11 w-full gap-2 bg-primary shadow-md hover:bg-primary/90 transition-all font-semibold"
               >
                 {isLoading ? (
                   <>
@@ -345,7 +345,7 @@ export default function LoginPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6, duration: 0.4 }}
-              className="text-center text-[11px] font-medium text-slate-400"
+              className="text-center text-[11px] font-medium text-muted-foreground"
             >
               {selectedRole === "college_admin"
                 ? "Dev Mode: ADMIN001 / admin123"

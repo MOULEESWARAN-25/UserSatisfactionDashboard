@@ -11,15 +11,11 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import {
-  Bell,
   Save,
   CheckCircle,
-  Mail,
-  Clock,
   AlertTriangle,
   MessageSquare,
   Building2,
@@ -56,19 +52,12 @@ export default function SettingsPage() {
   const [collegeName, setCollegeName] = useState("Demo University");
   const [contactEmail, setContactEmail] = useState("admin@demouniversity.edu");
 
-  // Notification preferences
-  const [emailNotifications, setEmailNotifications] = useState(true);
-  const [lowSatisfactionAlerts, setLowSatisfactionAlerts] = useState(true);
-  const [dailyDigest, setDailyDigest] = useState(false);
-
   // Thresholds
   const [satisfactionThreshold, setSatisfactionThreshold] = useState("3.0");
 
   // Feedback collection
   const [collectAnonymous, setCollectAnonymous] = useState(false);
   const [autoThankYou, setAutoThankYou] = useState(true);
-  const [minimumResponses, setMinimumResponses] = useState("25");
-  const [commentModeration, setCommentModeration] = useState(true);
 
   const handleSave = () => {
     setSaved(true);
@@ -118,59 +107,8 @@ export default function SettingsPage() {
             </Card>
           </motion.div>
 
-          {/* Notifications */}
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
-            <Card>
-              <CardHeader className="border-b border-border/50 pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 dark:bg-blue-950">
-                    <Bell className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-base">Notification Preferences</CardTitle>
-                    <CardDescription>Choose how and when you receive alerts</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4 pt-5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">Email Notifications</p>
-                      <p className="text-xs text-muted-foreground">Receive alerts via email</p>
-                    </div>
-                  </div>
-                  <Toggle checked={emailNotifications} onChange={setEmailNotifications} />
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">Low Satisfaction Alerts</p>
-                      <p className="text-xs text-muted-foreground">Notified when scores drop below threshold</p>
-                    </div>
-                  </div>
-                  <Toggle checked={lowSatisfactionAlerts} onChange={setLowSatisfactionAlerts} />
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <Clock className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium">Daily Digest</p>
-                      <p className="text-xs text-muted-foreground">Summary email every morning at 8 AM</p>
-                    </div>
-                  </div>
-                  <Toggle checked={dailyDigest} onChange={setDailyDigest} />
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-
           {/* Alert threshold */}
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }}>
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
             <Card>
               <CardHeader className="border-b border-border/50 pb-4">
                 <div className="flex items-center gap-3">
@@ -206,7 +144,7 @@ export default function SettingsPage() {
           </motion.div>
 
           {/* Feedback Collection */}
-          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.24 }}>
+          <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.16 }}>
             <Card>
               <CardHeader className="border-b border-border/50 pb-4">
                 <div className="flex items-center gap-3">
@@ -222,33 +160,11 @@ export default function SettingsPage() {
               <CardContent className="space-y-4 pt-5">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm font-medium">Allow Anonymous Comments</p>
-                    <p className="text-xs text-muted-foreground">Students can submit comments without sharing identity</p>
+                    <p className="text-sm font-medium">Allow Anonymous Feedback</p>
+                    <p className="text-xs text-muted-foreground">Students can submit feedback without sharing identity</p>
                   </div>
                   <Toggle checked={collectAnonymous} onChange={setCollectAnonymous} />
                 </div>
-                <Separator />
-                <div className="space-y-2">
-                  <Label htmlFor="minimum-responses">Minimum responses before showing analytics</Label>
-                  <Input
-                    id="minimum-responses"
-                    type="number"
-                    min={1}
-                    className="h-10 max-w-xs rounded-xl"
-                    value={minimumResponses}
-                    onChange={(e) => setMinimumResponses(e.target.value)}
-                  />
-                  <p className="text-xs text-muted-foreground">Analytics cards remain hidden until this threshold is met.</p>
-                </div>
-                <Separator />
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Enable Comment Moderation</p>
-                    <p className="text-xs text-muted-foreground">Flag comments for review before publishing to admin streams</p>
-                  </div>
-                  <Toggle checked={commentModeration} onChange={setCommentModeration} />
-                </div>
-                <Separator />
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium">Thank You Message</p>
@@ -264,7 +180,7 @@ export default function SettingsPage() {
           <motion.div
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.32 }}
+            transition={{ delay: 0.24 }}
             className="flex justify-end pb-2"
           >
             <Button onClick={handleSave} className="gap-2 rounded-xl" disabled={saved}>

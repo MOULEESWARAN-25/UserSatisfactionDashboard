@@ -95,7 +95,7 @@ export function PeakHoursChart({ data, index = 0 }: PeakHoursChartProps) {
                   axisLine={false}
                   tickLine={false}
                 />
-                <Tooltip content={<CustomTooltip />} />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }} />
                 <Bar dataKey="count" radius={[4, 4, 0, 0]} barSize={20}>
                   {data.map((entry, idx) => (
                     <Cell 

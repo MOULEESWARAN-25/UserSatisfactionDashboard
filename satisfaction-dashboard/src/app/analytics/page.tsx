@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { AppShell } from "@/components/layout/AppShell";
@@ -18,7 +18,6 @@ import { MOCK_ANALYTICS, MOCK_ADVANCED_ANALYTICS } from "@/lib/mock-data";
 export default function AnalyticsPage() {
   const [selected, setSelected] = useState("all");
   const [analytics, setAnalytics] = useState<AnalyticsDashboard | null>(null);
-  const [advancedAnalytics, setAdvancedAnalytics] = useState<AdvancedAnalytics | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,14 +27,62 @@ export default function AnalyticsPage() {
       .then((r) => r.json())
       .then((data) => {
         setAnalytics(data);
-        setAdvancedAnalytics(MOCK_ADVANCED_ANALYTICS);
       })
       .catch(() => {
         setAnalytics(MOCK_ANALYTICS);
-        setAdvancedAnalytics(MOCK_ADVANCED_ANALYTICS);
       })
       .finally(() => setLoading(false));
   }, [selected]);
+
+  // Filter advanced analytics based on selected service
+  const advancedAnalytics = (() => {
+    const base = MOCK_ADVANCED_ANALYTICS;
+    if (selected === "all") return base;
+
+    // Filter service details to selected service
+    const filteredServiceDetails = base.serviceDetails.filter(
+      (s) => s.serviceId === selected
+    );
+
+    // Scale sentiment proportionally based on the selected service's feedback share
+    const selectedService = analytics?.serviceBreakdown?.find((s) => s.serviceId === selected);
+    const totalFeedback = analytics?.serviceBreakdown?.reduce((sum, s) => sum + s.totalFeedback, 0) ?? 1;
+    const ratio = selectedService ? selectedService.totalFeedback / totalFeedback : 0.2;
+
+    const sentiment = {
+      positive: Math.round(base.sentiment.positive * ratio),
+      neutral: Math.round(base.sentiment.neutral * ratio),
+      negative: Math.round(base.sentiment.negative * ratio),
+    };
+
+    // Filter improvement areas relevant to the service
+    const serviceKeywords: Record<string, string[]> = {
+      cafeteria: ["food", "pricing", "maintenance"],
+      library: ["seating", "wifi"],
+      "online-course": ["platform", "stability"],
+      hostel: ["wifi", "connectivity", "maintenance"],
+      "campus-event": ["event", "communication"],
+    };
+    const keywords = serviceKeywords[selected] ?? [];
+    const filteredImprovementAreas = base.improvementAreas.filter((area) =>
+      keywords.some((kw) => area.area.toLowerCase().includes(kw))
+    );
+
+    // Filter top issues relevant to the service
+    const serviceName = selectedService?.serviceName?.toLowerCase() ?? "";
+    const filteredTopIssues = base.topIssues.filter(
+      (issue) => issue.toLowerCase().includes(serviceName.split(" ")[0]) ||
+        keywords.some((kw) => issue.toLowerCase().includes(kw))
+    );
+
+    return {
+      ...base,
+      sentiment,
+      serviceDetails: filteredServiceDetails,
+      improvementAreas: filteredImprovementAreas.length > 0 ? filteredImprovementAreas : base.improvementAreas.slice(0, 2),
+      topIssues: filteredTopIssues.length > 0 ? filteredTopIssues : base.topIssues.slice(0, 2),
+    };
+  })();
 
   const positiveCount = advancedAnalytics?.sentiment.positive ?? 0;
   const totalSentiment =

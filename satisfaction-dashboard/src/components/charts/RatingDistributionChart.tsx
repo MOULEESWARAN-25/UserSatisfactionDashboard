@@ -2,14 +2,12 @@
 
 import { motion } from "framer-motion";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
+  PieChart,
+  Pie,
+  Cell,
   Tooltip,
   ResponsiveContainer,
-  Cell,
+  Legend,
 } from "recharts";
 import {
   Card,
@@ -18,7 +16,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { BarChart3 } from "lucide-react";
+import { PieChart as PieChartIcon } from "lucide-react";
 import type { RatingDistribution } from "@/types/analytics";
 
 interface RatingDistributionChartProps {
@@ -27,37 +25,64 @@ interface RatingDistributionChartProps {
 }
 
 const COLORS = [
-  "hsl(0, 84%, 60%)",    // 1 - red
-  "hsl(25, 95%, 53%)",   // 2 - orange
-  "hsl(48, 96%, 53%)",   // 3 - yellow
-  "hsl(221, 83%, 53%)",  // 4 - blue
-  "hsl(142, 76%, 36%)",  // 5 - green
+  { fill: "#ef4444", label: "1 Star",  bg: "bg-red-500" },
+  { fill: "#f97316", label: "2 Stars", bg: "bg-orange-500" },
+  { fill: "#eab308", label: "3 Stars", bg: "bg-yellow-500" },
+  { fill: "#3b82f6", label: "4 Stars", bg: "bg-blue-500" },
+  { fill: "#22c55e", label: "5 Stars", bg: "bg-emerald-500" },
 ];
-
-const LABELS = ["1 Star", "2 Stars", "3 Stars", "4 Stars", "5 Stars"];
 
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload?.length) {
+    const data = payload[0];
+    const total = data?.payload?.total ?? 1;
+    const pct = ((data?.value / total) * 100).toFixed(1);
     return (
-      <div className="rounded-lg border border-border/50 bg-background px-3 py-2 shadow-xl">
-        <p className="mb-0.5 text-xs font-medium">{payload[0]?.payload?.label}</p>
-        <p className="text-xs text-muted-foreground">
-          Count:{" "}
-          <span className="font-semibold text-foreground">
-            {payload[0]?.value}
-          </span>
-        </p>
+      <div className="rounded-xl border border-border/50 bg-background/95 backdrop-blur px-4 py-3 shadow-2xl">
+        <p className="mb-1 text-sm font-semibold text-foreground">{data?.name}</p>
+        <div className="space-y-0.5">
+          <p className="text-xs text-muted-foreground">
+            Count: <span className="font-bold text-foreground">{data?.value}</span>
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Share: <span className="font-bold text-foreground">{pct}%</span>
+          </p>
+        </div>
       </div>
     );
   }
   return null;
 };
 
+const renderCustomLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+  if (percent < 0.05) return null;
+  const RADIAN = Math.PI / 180;
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  return (
+    <text
+      x={x}
+      y={y}
+      fill="white"
+      textAnchor="middle"
+      dominantBaseline="central"
+      fontSize={12}
+      fontWeight={700}
+    >
+      {`${(percent * 100).toFixed(0)}%`}
+    </text>
+  );
+};
+
 export function RatingDistributionChart({ data, index = 0 }: RatingDistributionChartProps) {
+  const total = data.reduce((sum, d) => sum + d.count, 0);
+
   const chartData = data.map((d, i) => ({
-    ...d,
-    label: LABELS[i] ?? `${d.rating} Stars`,
-    shortLabel: d.rating.toString(),
+    name: COLORS[i]?.label ?? `${d.rating} Stars`,
+    value: d.count,
+    total,
+    color: COLORS[i]?.fill ?? "#6b7280",
   }));
 
   return (
@@ -70,54 +95,72 @@ export function RatingDistributionChart({ data, index = 0 }: RatingDistributionC
         ease: [0.25, 0.46, 0.45, 0.94],
       }}
     >
-    <Card className="h-full overflow-hidden">
-      <CardHeader className="flex min-h-[76px] flex-row items-center justify-between pb-3">
-        <div className="space-y-1">
-          <CardTitle className="text-base font-semibold">
-            Rating Distribution
-          </CardTitle>
-          <CardDescription>Breakdown by star rating</CardDescription>
-        </div>
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950">
-          <BarChart3 className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-        </div>
-      </CardHeader>
-      <CardContent className="pb-4 pt-0">
-        <div className="h-[240px] w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={chartData}
-              margin={{ top: 8, right: 8, bottom: 0, left: -12 }}
-            >
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="hsl(var(--border))"
-                vertical={false}
-              />
-              <XAxis
-                dataKey="shortLabel"
-                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                axisLine={false}
-                tickLine={false}
-                tickMargin={8}
-              />
-              <YAxis
-                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
-                axisLine={false}
-                tickLine={false}
-                tickMargin={8}
-              />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.5 }} />
-              <Bar dataKey="count" radius={[6, 6, 0, 0]} maxBarSize={48}>
-                {chartData.map((_, idx) => (
-                  <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </CardContent>
-    </Card>
+      <Card className="h-full overflow-hidden">
+        <CardHeader className="flex min-h-[76px] flex-row items-center justify-between pb-3">
+          <div className="space-y-1">
+            <CardTitle className="text-base font-semibold">
+              Rating Distribution
+            </CardTitle>
+            <CardDescription>Breakdown by star rating</CardDescription>
+          </div>
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 dark:bg-blue-950">
+            <PieChartIcon className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+          </div>
+        </CardHeader>
+        <CardContent className="pb-4 pt-0">
+          <div className="h-[260px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={50}
+                  outerRadius={95}
+                  paddingAngle={3}
+                  dataKey="value"
+                  strokeWidth={2}
+                  stroke="hsl(var(--background))"
+                  labelLine={false}
+                  label={renderCustomLabel}
+                  animationBegin={200}
+                  animationDuration={800}
+                >
+                  {chartData.map((entry, idx) => (
+                    <Cell key={idx} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip content={<CustomTooltip />} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Custom Legend */}
+          <div className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-5">
+            {chartData.map((item, idx) => {
+              const pct = total > 0 ? ((item.value / total) * 100).toFixed(0) : "0";
+              return (
+                <motion.div
+                  key={item.name}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.4 + idx * 0.06 }}
+                  className="flex flex-col items-center gap-1 rounded-lg bg-muted/30 p-2"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <div
+                      className="h-2.5 w-2.5 rounded-full"
+                      style={{ backgroundColor: item.color }}
+                    />
+                    <span className="text-[10px] font-medium text-muted-foreground">{item.name}</span>
+                  </div>
+                  <span className="text-sm font-bold">{pct}%</span>
+                </motion.div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 }

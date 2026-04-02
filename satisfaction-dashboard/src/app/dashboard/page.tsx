@@ -2,15 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { MessageSquare, Star, TrendingUp, Users, AlertCircle, CheckCircle2, Clock, Search, ArrowRight } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { staggerContainer, staggerItem } from "@/lib/animations";
 import { AppShell } from "@/components/layout/AppShell";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 
-import { SatisfactionTrendChart } from "@/components/charts/SatisfactionTrendChart";
+import { MonthlyComparisonChart } from "@/components/charts/MonthlyComparisonChart";
+import { PeakHoursChart } from "@/components/charts/PeakHoursChart";
+import { FeedbackGrowthChart } from "@/components/charts/FeedbackGrowthChart";
 import { ServiceHealthIndicator } from "@/components/dashboard/ServiceHealthIndicator";
 import { TopComplaintsSummary } from "@/components/dashboard/TopComplaintsSummary";
-import { SatisfactionOverview } from "@/components/dashboard/SatisfactionOverview";
 import { DepartmentPerformanceWidget } from "@/components/dashboard/DepartmentPerformanceWidget";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AdminOnly } from "@/components/auth/ProtectedRoute";
@@ -36,9 +37,6 @@ const severityBadge: Record<string, string> = {
 };
 
 export default function DashboardPage() {
-  const [trendRange, setTrendRange] = useState<"7d" | "30d" | "semester" | "custom">("30d");
-  const [customStart, setCustomStart] = useState("");
-  const [customEnd, setCustomEnd] = useState("");
   const [dashboard, setDashboard] = useState<EnhancedDashboard | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -62,41 +60,6 @@ export default function DashboardPage() {
     critical: serviceHealth.filter((s) => s.status === "critical").length,
   };
 
-  const allTrends = dashboard?.trends ?? [];
-
-  const parseTrendDate = (label: string): Date | null => {
-    const [month, day] = label.split("/").map(Number);
-    if (!month || !day) return null;
-    const dt = new Date();
-    dt.setMonth(month - 1);
-    dt.setDate(day);
-    dt.setHours(0, 0, 0, 0);
-    return dt;
-  };
-
-  let filteredTrends = allTrends;
-  if (trendRange === "7d") filteredTrends = allTrends.slice(-7);
-  if (trendRange === "30d") filteredTrends = allTrends.slice(-30);
-  if (trendRange === "custom" && customStart && customEnd) {
-    const start = new Date(customStart);
-    const end = new Date(customEnd);
-    start.setHours(0, 0, 0, 0);
-    end.setHours(23, 59, 59, 999);
-
-    filteredTrends = allTrends.filter((point) => {
-      const pointDate = parseTrendDate(point.date);
-      if (!pointDate) return false;
-      return pointDate >= start && pointDate <= end;
-    });
-  }
-
-  const chartTrends = filteredTrends.length > 0 ? filteredTrends : allTrends;
-
-  const trendAvgScore = chartTrends.length
-    ? chartTrends.reduce((sum, t) => sum + t.score, 0) / chartTrends.length
-    : 0;
-  const trendResponses = chartTrends.reduce((sum, t) => sum + t.count, 0);
-
   return (
     <AdminOnly>
       <AppShell
@@ -109,7 +72,6 @@ export default function DashboardPage() {
           initial="hidden"
           animate="visible"
         >
-
 
           {/* KPI Row */}
           <motion.div variants={staggerItem} className="grid grid-cols-2 items-stretch gap-4 md:grid-cols-3 xl:grid-cols-5">
@@ -158,65 +120,15 @@ export default function DashboardPage() {
             )}
           </motion.div>
 
-          {/* Trend + Issues row */}
+          {/* Charts Row: Year Comparison (grouped bar) + Active Issues */}
           <motion.div variants={staggerItem} className="grid gap-4 lg:grid-cols-5">
-            {/* Satisfaction Trend - wider */}
             <div className="lg:col-span-3">
               {loading ? (
                 <Skeleton className="h-72 rounded-xl" />
               ) : (
-                <SatisfactionTrendChart
-                  data={chartTrends}
+                <MonthlyComparisonChart
+                  data={MOCK_ADVANCED_ANALYTICS.monthlyComparison}
                   index={0}
-                  toolbar={(
-                    <div className="flex flex-wrap items-end gap-3">
-                      <div className="space-y-1">
-                        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Trend Window</p>
-                        <select
-                          className="h-9 rounded-lg border border-input bg-background px-3 text-sm"
-                          value={trendRange}
-                          onChange={(e) => setTrendRange(e.target.value as "7d" | "30d" | "semester" | "custom")}
-                        >
-                          <option value="7d">Last 7 days</option>
-                          <option value="30d">Last 30 days</option>
-                          <option value="semester">Semester</option>
-                          <option value="custom">Custom range</option>
-                        </select>
-                      </div>
-                      {trendRange === "custom" && (
-                        <>
-                          <div className="space-y-1">
-                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">From</p>
-                            <input
-                              type="date"
-                              className="h-9 rounded-lg border border-input bg-background px-3 text-sm"
-                              value={customStart}
-                              onChange={(e) => setCustomStart(e.target.value)}
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">To</p>
-                            <input
-                              type="date"
-                              className="h-9 rounded-lg border border-input bg-background px-3 text-sm"
-                              value={customEnd}
-                              onChange={(e) => setCustomEnd(e.target.value)}
-                            />
-                          </div>
-                        </>
-                      )}
-                      <div className="ml-auto flex gap-4 text-sm">
-                        <div>
-                          <p className="text-xs text-muted-foreground">Avg Score</p>
-                          <p className="font-semibold">{trendAvgScore.toFixed(2)} / 5</p>
-                        </div>
-                        <div>
-                          <p className="text-xs text-muted-foreground">Responses</p>
-                          <p className="font-semibold">{trendResponses}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 />
               )}
             </div>
@@ -288,6 +200,27 @@ export default function DashboardPage() {
             </div>
           </motion.div>
 
+          {/* Charts Row: Feedback Volume (line) + Peak Hours (bar) */}
+          <motion.div variants={staggerItem} className="grid gap-4 lg:grid-cols-2">
+            {loading ? (
+              <>
+                <Skeleton className="h-64 rounded-xl" />
+                <Skeleton className="h-64 rounded-xl" />
+              </>
+            ) : (
+              <>
+                <FeedbackGrowthChart
+                  data={dashboard?.trends ?? []}
+                  index={1}
+                />
+                <PeakHoursChart
+                  data={MOCK_ADVANCED_ANALYTICS.peakHours}
+                  index={2}
+                />
+              </>
+            )}
+          </motion.div>
+
           {/* Service Health + Top Complaints */}
           <motion.div variants={staggerItem} className="grid gap-4 lg:grid-cols-2">
             {loading ? (
@@ -309,30 +242,15 @@ export default function DashboardPage() {
             )}
           </motion.div>
 
-          {/* Satisfaction Overview + Department Performance */}
-          <motion.div variants={staggerItem} className="grid gap-4 lg:grid-cols-2">
+          {/* Department Performance (full width) */}
+          <motion.div variants={staggerItem}>
             {loading ? (
-              <>
-                <Skeleton className="h-80 rounded-xl" />
-                <Skeleton className="h-80 rounded-xl" />
-              </>
+              <Skeleton className="h-80 rounded-xl" />
             ) : (
-              <>
-                <SatisfactionOverview
-                  data={dashboard?.serviceBreakdown?.map((s) => ({
-                    serviceId: s.serviceId,
-                    serviceName: s.serviceName,
-                    avgScore: s.avgScore,
-                    totalFeedback: s.totalFeedback,
-                    trend: s.trend ?? "stable",
-                  })) ?? []}
-                  index={4}
-                />
-                <DepartmentPerformanceWidget
-                  departments={dashboard?.departmentPerformance ?? []}
-                  index={5}
-                />
-              </>
+              <DepartmentPerformanceWidget
+                departments={dashboard?.departmentPerformance ?? []}
+                index={5}
+              />
             )}
           </motion.div>
 

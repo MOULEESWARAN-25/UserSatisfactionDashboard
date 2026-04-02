@@ -13,7 +13,6 @@ import {
   MessageSquare,
   Settings,
   BarChart3,
-  Megaphone,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth-context";
@@ -34,14 +33,12 @@ const ADMIN_ITEMS: SidebarItem[] = [
   { label: "Services", href: "/services", icon: Grid3x3 },
   { label: "Reports", href: "/reports", icon: FileText },
   { label: "Feedback", href: "/feedback", icon: MessageSquare },
-  { label: "Impact", href: "/impact", icon: Megaphone },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
 const STUDENT_ITEMS: SidebarItem[] = [
   { label: "Submit Feedback", href: "/feedback/submit", icon: MessageSquare },
   { label: "My Feedback", href: "/feedback/my", icon: FileText },
-  { label: "Impact", href: "/impact", icon: Megaphone },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 

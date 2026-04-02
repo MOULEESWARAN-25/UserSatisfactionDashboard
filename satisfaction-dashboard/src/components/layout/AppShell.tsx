@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Header } from "@/components/layout/Header";
+import { FloatingChatbot } from "@/components/layout/FloatingChatbot";
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -22,6 +23,8 @@ export function AppShell({ children, title, description }: AppShellProps) {
           <div className="container mx-auto max-w-7xl p-6">{children}</div>
         </main>
       </div>
+      <FloatingChatbot />
     </div>
   );
 }
+

@@ -5,8 +5,7 @@ import {
   CheckCircle2,
   Send,
   Shield,
-  Megaphone,
-  ArrowRight
+  FileText,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -45,11 +44,14 @@ export function FeedbackForm() {
                   ratedQuestions === totalQuestions && 
                   overallSatisfaction > 0;
 
+  const [error, setError] = useState("");
+
   async function handleSubmit() {
     if (!isValid || !service || !user) return;
     setLoading(true);
+    setError("");
     try {
-      await fetch("/api/feedback", {
+      const res = await fetch("/api/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -64,9 +66,16 @@ export function FeedbackForm() {
           submittedAt: new Date().toISOString(),
         }),
       });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Failed to submit feedback. Please try again.");
+        return;
+      }
       setSubmitted(true);
     } catch (e) {
       console.error(e);
+      setError("Network error. Please check your connection and try again.");
     } finally {
       setLoading(false);
     }
@@ -96,11 +105,10 @@ export function FeedbackForm() {
             <Button
               variant="default"
               className="gap-2 bg-primary"
-              onClick={() => router.push('/impact')}
+              onClick={() => router.push('/feedback/my')}
             >
-              <Megaphone className="h-4 w-4" />
-              See Your Impact
-              <ArrowRight className="h-4 w-4" />
+              <FileText className="h-4 w-4" />
+              View My Feedback
             </Button>
             <Button
               variant="outline"
@@ -215,6 +223,12 @@ export function FeedbackForm() {
                   <Send className="h-5 w-5" />
                   {loading ? "Submitting..." : "Submit Feedback"}
                 </Button>
+
+                {error && (
+                  <p className="text-center text-sm font-medium text-destructive">
+                    {error}
+                  </p>
+                )}
                 
                 {!isValid && (
                   <p className="text-center text-xs text-muted-foreground">

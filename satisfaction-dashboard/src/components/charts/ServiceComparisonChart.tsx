@@ -2,13 +2,15 @@
 
 import { motion } from "framer-motion";
 import {
-  RadarChart,
-  PolarGrid,
-  PolarAngleAxis,
-  PolarRadiusAxis,
-  Radar,
-  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
   Tooltip,
+  ResponsiveContainer,
+  Cell,
+  LabelList,
 } from "recharts";
 import {
   Card,
@@ -17,13 +19,22 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { Sparkles } from "lucide-react";
+import { BarChart3 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import type { ServiceSatisfaction } from "@/types/analytics";
 
 interface ServiceComparisonChartProps {
   data: ServiceSatisfaction[];
   index?: number;
 }
+
+const COLORS = [
+  "#6366f1", // indigo
+  "#8b5cf6", // violet
+  "#a855f7", // purple
+  "#ec4899", // pink
+  "#f43f5e", // rose
+];
 
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload?.length) {
@@ -32,15 +43,25 @@ const CustomTooltip = ({ active, payload }: any) => {
       <div className="rounded-xl border border-border/50 bg-background/95 backdrop-blur px-4 py-3 shadow-2xl">
         <p className="mb-1.5 text-sm font-semibold text-foreground">{data?.serviceName}</p>
         <div className="space-y-1">
-          <div className="flex items-center justify-between gap-4">
-            <span className="text-xs text-muted-foreground">Score</span>
-            <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+          <div className="flex items-center justify-between gap-6">
+            <span className="text-xs text-muted-foreground">Avg Score</span>
+            <span className="text-sm font-bold text-primary">
               {data?.avgScore?.toFixed(1)} / 5
             </span>
           </div>
-          <div className="flex items-center justify-between gap-4">
-            <span className="text-xs text-muted-foreground">Feedback</span>
+          <div className="flex items-center justify-between gap-6">
+            <span className="text-xs text-muted-foreground">Total Feedback</span>
             <span className="text-sm font-semibold">{data?.totalFeedback}</span>
+          </div>
+          <div className="flex items-center justify-between gap-6">
+            <span className="text-xs text-muted-foreground">Trend</span>
+            <span className={cn(
+              "text-xs font-medium",
+              data?.trend === "up" ? "text-emerald-500" :
+              data?.trend === "down" ? "text-rose-500" : "text-muted-foreground"
+            )}>
+              {data?.trend === "up" ? "↑ Improving" : data?.trend === "down" ? "↓ Declining" : "→ Stable"}
+            </span>
           </div>
         </div>
       </div>
@@ -50,10 +71,7 @@ const CustomTooltip = ({ active, payload }: any) => {
 };
 
 export function ServiceComparisonChart({ data, index = 0 }: ServiceComparisonChartProps) {
-  const chartData = data.map((d) => ({
-    ...d,
-    fullMark: 5,
-  }));
+  const sortedData = [...data].sort((a, b) => b.avgScore - a.avgScore);
 
   return (
     <motion.div
@@ -72,93 +90,86 @@ export function ServiceComparisonChart({ data, index = 0 }: ServiceComparisonCha
               Service Comparison
             </CardTitle>
             <CardDescription>
-              Radar view of satisfaction across all services
+              Average satisfaction scores by service
             </CardDescription>
           </div>
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-100 to-purple-100 dark:from-violet-950 dark:to-purple-950">
-            <Sparkles className="h-4 w-4 text-violet-600 dark:text-violet-400" />
+            <BarChart3 className="h-4 w-4 text-violet-600 dark:text-violet-400" />
           </div>
         </CardHeader>
         <CardContent className="pb-4 pt-0">
           <div className="h-[300px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <RadarChart cx="50%" cy="50%" outerRadius="70%" data={chartData}>
-                <defs>
-                  <linearGradient id="radarGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.8} />
-                    <stop offset="100%" stopColor="#6366f1" stopOpacity={0.3} />
-                  </linearGradient>
-                </defs>
-                <PolarGrid 
-                  stroke="#e5e7eb" 
+              <BarChart
+                data={sortedData}
+                layout="vertical"
+                margin={{ top: 4, right: 40, bottom: 4, left: 4 }}
+              >
+                <CartesianGrid
                   strokeDasharray="3 3"
-                  className="dark:stroke-zinc-700"
+                  stroke="hsl(var(--border))"
+                  horizontal={false}
                 />
-                <PolarAngleAxis
-                  dataKey="serviceName"
-                  tick={{ 
-                    fontSize: 11, 
-                    fill: "#6b7280",
-                    fontWeight: 500,
-                  }}
-                  className="dark:fill-zinc-400"
-                />
-                <PolarRadiusAxis
-                  angle={90}
+                <XAxis
+                  type="number"
                   domain={[0, 5]}
-                  tick={{ fontSize: 10, fill: "#9ca3af" }}
                   tickCount={6}
+                  tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
                   axisLine={false}
+                  tickLine={false}
                 />
-                <Tooltip content={<CustomTooltip />} />
-                <Radar
-                  name="Satisfaction"
-                  dataKey="avgScore"
-                  stroke="#8b5cf6"
-                  strokeWidth={2}
-                  fill="url(#radarGradient)"
-                  dot={{
-                    r: 5,
-                    fill: "#8b5cf6",
-                    stroke: "#fff",
-                    strokeWidth: 2,
-                  }}
-                  activeDot={{
-                    r: 7,
-                    fill: "#7c3aed",
-                    stroke: "#fff",
-                    strokeWidth: 2,
-                  }}
+                <YAxis
+                  type="category"
+                  dataKey="serviceName"
+                  tick={{ fontSize: 12, fill: "hsl(var(--foreground))", fontWeight: 500 }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={100}
                 />
-              </RadarChart>
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }} />
+                <Bar dataKey="avgScore" radius={[0, 6, 6, 0]} barSize={28}>
+                  {sortedData.map((_, idx) => (
+                    <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
+                  ))}
+                  <LabelList
+                    dataKey="avgScore"
+                    position="right"
+                    formatter={(value: number) => value.toFixed(1)}
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 700,
+                      fill: "hsl(var(--foreground))",
+                    }}
+                  />
+                </Bar>
+              </BarChart>
             </ResponsiveContainer>
           </div>
-          
-          {/* Score Cards */}
-          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
-            {chartData.map((item, idx) => {
-              const scoreColor = 
-                item.avgScore >= 4.5 ? "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950" :
-                item.avgScore >= 4 ? "text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950" :
-                item.avgScore >= 3.5 ? "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950" :
-                item.avgScore >= 3 ? "text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950" :
-                "text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950";
-              
-              return (
-                <motion.div
-                  key={item.serviceId}
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.3 + idx * 0.05 }}
-                  className={`flex flex-col items-center rounded-xl p-3 ${scoreColor}`}
-                >
-                  <span className="text-lg font-bold">{item.avgScore.toFixed(1)}</span>
-                  <span className="text-[10px] font-medium opacity-80 text-center leading-tight">
-                    {item.serviceName}
-                  </span>
-                </motion.div>
-              );
-            })}
+
+          {/* Trend indicators */}
+          <div className="mt-3 flex flex-wrap gap-2">
+            {sortedData.map((item, idx) => (
+              <motion.div
+                key={item.serviceId}
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3 + idx * 0.05 }}
+                className="flex items-center gap-1.5 rounded-lg border border-border/50 bg-muted/30 px-2.5 py-1.5"
+              >
+                <div
+                  className="h-2.5 w-2.5 rounded-full"
+                  style={{ backgroundColor: COLORS[idx % COLORS.length] }}
+                />
+                <span className="text-xs font-medium">{item.serviceName}</span>
+                <span className={cn(
+                  "text-[10px] font-semibold",
+                  item.trend === "up" ? "text-emerald-500" :
+                  item.trend === "down" ? "text-rose-500" : "text-muted-foreground"
+                )}>
+                  {item.trend === "up" ? "▲" : item.trend === "down" ? "▼" : "—"}
+                </span>
+              </motion.div>
+            ))}
           </div>
         </CardContent>
       </Card>
