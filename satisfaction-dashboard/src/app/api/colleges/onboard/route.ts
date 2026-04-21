@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
 import { connectDB } from "@/lib/mongodb";
 import mongoose from "mongoose";
 import type { College } from "@/types/analytics";

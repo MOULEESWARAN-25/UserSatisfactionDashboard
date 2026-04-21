@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
 import { testConnection, getConnectionState } from "@/lib/mongodb";
 import { USE_MOCK_DATA } from "@/lib/mock-data";
 

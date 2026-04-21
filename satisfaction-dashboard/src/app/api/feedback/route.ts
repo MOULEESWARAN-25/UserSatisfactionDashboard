@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+
+export const dynamic = "force-dynamic";
 import { connectDB } from "@/lib/mongodb";
 import mongoose from "mongoose";
 import { MOCK_FEEDBACK, USE_MOCK_DATA } from "@/lib/mock-data";
