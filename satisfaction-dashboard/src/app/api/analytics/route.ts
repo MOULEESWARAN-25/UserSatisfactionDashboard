@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
+export const fetchCache = "force-no-store";
 import { connectDB } from "@/lib/mongodb";
 import mongoose from "mongoose";
 import { SERVICES } from "@/lib/constants";
