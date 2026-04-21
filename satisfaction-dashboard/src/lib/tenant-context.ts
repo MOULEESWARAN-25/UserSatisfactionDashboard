@@ -21,8 +21,13 @@ export const DEFAULT_COLLEGE_ID = "college-default-001";
  *   localhost:3000 → null (returns default)
  */
 export function getCollegeIdFromSubdomain(hostname: string): string | null {
-  // Skip localhost and IP addresses
-  if (hostname === "localhost" || /^\d+\.\d+\.\d+\.\d+$/.test(hostname)) {
+  // Skip localhost, IP addresses, and vercel.app preview/production domains
+  if (
+    hostname === "localhost" ||
+    hostname.includes("localhost") ||
+    hostname.includes("vercel.app") ||
+    /^\d+\.\d+\.\d+\.\d+$/.test(hostname)
+  ) {
     return null;
   }
 
