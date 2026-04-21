@@ -325,9 +325,8 @@ export const MOCK_ADVANCED_ANALYTICS: AdvancedAnalytics = {
   ],
 };
 
-// Flag to use mock data (set to false to use MongoDB)
-// Set this to false when MongoDB is connected and you want real data
-export const USE_MOCK_DATA = process.env.NEXT_PUBLIC_USE_MOCK_DATA !== 'false';
+// Always use real MongoDB
+export const USE_MOCK_DATA = false;
 
 // Default users for easy testing
 export const DEFAULT_USERS = {
