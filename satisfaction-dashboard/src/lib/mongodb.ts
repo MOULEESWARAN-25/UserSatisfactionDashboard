@@ -16,8 +16,19 @@ const cached: MongooseCache = global.mongoose ?? { conn: null, promise: null };
 global.mongoose = cached;
 
 export async function connectDB() {
-  if (cached.conn) {
+  if (cached.conn && mongoose.connection.readyState === 1) {
     return cached.conn;
+  }
+
+  // If connection exists but readyState isn't connected, cleanly disconnect to avoid leaks
+  if (cached.conn && mongoose.connection.readyState !== 1) {
+    cached.conn = null;
+    cached.promise = null;
+    try {
+      await mongoose.disconnect();
+    } catch (e) {
+      console.warn("Error disconnecting stale MongoDB connection", e);
+    }
   }
 
   if (!MONGODB_URI) {
