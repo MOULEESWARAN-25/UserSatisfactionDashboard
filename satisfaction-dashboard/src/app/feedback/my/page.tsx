@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/lib/auth-context";
 import { formatDate } from "@/lib/utils";
-import { MOCK_FEEDBACK } from "@/lib/mock-data";
+
 import type { FeedbackRecord } from "@/types/feedback";
 
 export default function MyFeedbackPage() {
@@ -24,9 +24,7 @@ export default function MyFeedbackPage() {
     fetch(`/api/feedback?studentId=${encodeURIComponent(user.id)}&limit=100`)
       .then((r) => r.json())
       .then((d) => setRecords(d.feedback ?? []))
-      .catch(() => {
-        setRecords(MOCK_FEEDBACK.filter((f) => f.studentId === user.id));
-      })
+      .catch(() => setRecords([]))
       .finally(() => setLoading(false));
   }, [user?.id]);
 

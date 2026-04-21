@@ -12,8 +12,7 @@ import { AdminOnly } from "@/components/auth/ProtectedRoute";
 import { Users, BarChart3, Award, AlertTriangle, TrendingDown } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import type { AnalyticsDashboard, AdvancedAnalytics } from "@/types/analytics";
-import { MOCK_ANALYTICS, MOCK_ADVANCED_ANALYTICS } from "@/lib/mock-data";
+import type { AnalyticsDashboard } from "@/types/analytics";
 
 export default function AnalyticsPage() {
   const [selected, setSelected] = useState("all");
@@ -28,60 +27,38 @@ export default function AnalyticsPage() {
       .then((data) => {
         setAnalytics(data);
       })
-      .catch(() => {
-        setAnalytics(MOCK_ANALYTICS);
-      })
+      .catch(() => null)
       .finally(() => setLoading(false));
   }, [selected]);
 
-  // Filter advanced analytics based on selected service
+  // Derive advanced analytics from real API data
   const advancedAnalytics = (() => {
-    const base = MOCK_ADVANCED_ANALYTICS;
-    if (selected === "all") return base;
+    const breakdown = analytics?.serviceBreakdown ?? [];
+    const totalFeedback = breakdown.reduce((s, b) => s + b.totalFeedback, 0);
+    // Approximate sentiment from ratings distribution
+    const dist = analytics?.ratingDistribution ?? [];
+    const positive = dist.filter((d) => d.rating >= 4).reduce((s, d) => s + d.count, 0);
+    const neutral = dist.filter((d) => d.rating === 3).reduce((s, d) => s + d.count, 0);
+    const negative = dist.filter((d) => d.rating <= 2).reduce((s, d) => s + d.count, 0);
 
-    // Filter service details to selected service
-    const filteredServiceDetails = base.serviceDetails.filter(
-      (s) => s.serviceId === selected
-    );
+    const improvementAreas = breakdown
+      .filter((s) => s.avgScore < 4)
+      .map((s) => ({ area: s.serviceName, score: s.avgScore, change: 0 }));
 
-    // Scale sentiment proportionally based on the selected service's feedback share
-    const selectedService = analytics?.serviceBreakdown?.find((s) => s.serviceId === selected);
-    const totalFeedback = analytics?.serviceBreakdown?.reduce((sum, s) => sum + s.totalFeedback, 0) ?? 1;
-    const ratio = selectedService ? selectedService.totalFeedback / totalFeedback : 0.2;
+    const topIssues = breakdown.filter((s) => s.avgScore < 3.5).map((s) => `${s.serviceName} needs improvement`);
 
-    const sentiment = {
-      positive: Math.round(base.sentiment.positive * ratio),
-      neutral: Math.round(base.sentiment.neutral * ratio),
-      negative: Math.round(base.sentiment.negative * ratio),
-    };
+    let filtered = { sentiment: { positive, neutral, negative }, serviceDetails: [] as any[], improvementAreas, topIssues };
 
-    // Filter improvement areas relevant to the service
-    const serviceKeywords: Record<string, string[]> = {
-      cafeteria: ["food", "pricing", "maintenance"],
-      library: ["seating", "wifi"],
-      "online-course": ["platform", "stability"],
-      hostel: ["wifi", "connectivity", "maintenance"],
-      "campus-event": ["event", "communication"],
-    };
-    const keywords = serviceKeywords[selected] ?? [];
-    const filteredImprovementAreas = base.improvementAreas.filter((area) =>
-      keywords.some((kw) => area.area.toLowerCase().includes(kw))
-    );
-
-    // Filter top issues relevant to the service
-    const serviceName = selectedService?.serviceName?.toLowerCase() ?? "";
-    const filteredTopIssues = base.topIssues.filter(
-      (issue) => issue.toLowerCase().includes(serviceName.split(" ")[0]) ||
-        keywords.some((kw) => issue.toLowerCase().includes(kw))
-    );
-
-    return {
-      ...base,
-      sentiment,
-      serviceDetails: filteredServiceDetails,
-      improvementAreas: filteredImprovementAreas.length > 0 ? filteredImprovementAreas : base.improvementAreas.slice(0, 2),
-      topIssues: filteredTopIssues.length > 0 ? filteredTopIssues : base.topIssues.slice(0, 2),
-    };
+    if (selected !== "all") {
+      const svc = breakdown.find((s) => s.serviceId === selected);
+      const ratio = svc && totalFeedback > 0 ? svc.totalFeedback / totalFeedback : 0.2;
+      filtered.sentiment = {
+        positive: Math.round(positive * ratio),
+        neutral: Math.round(neutral * ratio),
+        negative: Math.round(negative * ratio),
+      };
+    }
+    return filtered;
   })();
 
   const positiveCount = advancedAnalytics?.sentiment.positive ?? 0;
@@ -286,7 +263,7 @@ export default function AnalyticsPage() {
                         <span>Avg Score</span>
                         <span className="font-medium text-foreground">
                           {(
-                            service.questionRatings.reduce((sum, q) => sum + q.avgRating, 0) /
+                            service.questionRatings.reduce((sum: number, q: { avgRating: number }) => sum + q.avgRating, 0) /
                             Math.max(service.questionRatings.length, 1)
                           ).toFixed(1)}
                           /5

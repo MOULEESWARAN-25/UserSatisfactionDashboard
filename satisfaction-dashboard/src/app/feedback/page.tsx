@@ -20,7 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AdminOnly } from "@/components/auth/ProtectedRoute";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { MOCK_FEEDBACK } from "@/lib/mock-data";
+
 
 const PAGE_SIZE = 8;
 
@@ -59,14 +59,7 @@ export default function FeedbackPage() {
     fetch(`/api/feedback${params}`)
       .then((r) => r.json())
       .then((d) => setAllFeedback(d.feedback ?? []))
-      .catch(() => {
-        // Fallback to mock data
-        if (selected !== "all") {
-          setAllFeedback(MOCK_FEEDBACK.filter((f) => f.serviceId === selected));
-        } else {
-          setAllFeedback(MOCK_FEEDBACK);
-        }
-      })
+      .catch(() => setAllFeedback([]))
       .finally(() => setLoading(false));
   }, [selected]);
 

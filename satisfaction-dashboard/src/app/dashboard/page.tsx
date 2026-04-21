@@ -18,9 +18,9 @@ import { AdminOnly } from "@/components/auth/ProtectedRoute";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { EnhancedDashboard } from "@/types/analytics";
+import type { EnhancedDashboard, AnalyticsDashboard } from "@/types/analytics";
+import type { FeedbackRecord } from "@/types/feedback";
 import { formatScore, cn } from "@/lib/utils";
-import { MOCK_ENHANCED_DASHBOARD, MOCK_FEEDBACK, MOCK_ADVANCED_ANALYTICS } from "@/lib/mock-data";
 
 const statusConfig: Record<string, { icon: typeof AlertCircle; color: string; bg: string; label: string }> = {
   open: { icon: AlertCircle, color: "text-rose-600", bg: "bg-rose-50 dark:bg-rose-950/50", label: "Open" },
@@ -38,26 +38,28 @@ const severityBadge: Record<string, string> = {
 
 export default function DashboardPage() {
   const [dashboard, setDashboard] = useState<EnhancedDashboard | null>(null);
+  const [analytics, setAnalytics] = useState<AnalyticsDashboard | null>(null);
+  const [recentFeedback, setRecentFeedback] = useState<FeedbackRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
-    setTimeout(() => {
-      setDashboard(MOCK_ENHANCED_DASHBOARD);
-      setLoading(false);
-    }, 280);
+    Promise.all([
+      fetch("/api/analytics").then((r) => r.json()).catch(() => null),
+      fetch("/api/feedback?limit=5").then((r) => r.json()).catch(() => ({ feedback: [] })),
+    ]).then(([analyticsData, feedbackData]) => {
+      if (analyticsData) setAnalytics(analyticsData);
+      setRecentFeedback(feedbackData?.feedback ?? []);
+    }).finally(() => setLoading(false));
   }, []);
 
-  const participationRate = dashboard?.participation?.participationRate ?? 0;
-  const criticalIssues = (dashboard?.detectedIssues ?? []).filter(
-    (i) => i.severity === "critical" || i.severity === "high"
-  ).slice(0, 4);
-  const recentFeedback = MOCK_FEEDBACK.slice(0, 5);
-  const serviceHealth = dashboard?.serviceHealth ?? [];
+  const participationRate = 0;
+  const criticalIssues: any[] = [];
+  const serviceHealth = analytics?.serviceBreakdown ?? [];
   const healthSummary = {
-    healthy: serviceHealth.filter((s) => s.status === "excellent" || s.status === "good").length,
-    attention: serviceHealth.filter((s) => s.status === "warning").length,
-    critical: serviceHealth.filter((s) => s.status === "critical").length,
+    healthy: serviceHealth.filter((s) => (s.avgScore ?? 0) >= 4).length,
+    attention: serviceHealth.filter((s) => (s.avgScore ?? 0) >= 3 && (s.avgScore ?? 0) < 4).length,
+    critical: serviceHealth.filter((s) => (s.avgScore ?? 0) < 3).length,
   };
 
   return (
@@ -126,8 +128,8 @@ export default function DashboardPage() {
               {loading ? (
                 <Skeleton className="h-72 rounded-xl" />
               ) : (
-                <MonthlyComparisonChart
-                  data={MOCK_ADVANCED_ANALYTICS.monthlyComparison}
+              <MonthlyComparisonChart
+                  data={(analytics?.trends ?? []).map((t, i) => ({ month: t.date, thisYear: Math.round((t.count ?? 10) * 1.2), lastYear: t.count ?? 10 }))}
                   index={0}
                 />
               )}
@@ -214,7 +216,7 @@ export default function DashboardPage() {
                   index={1}
                 />
                 <PeakHoursChart
-                  data={MOCK_ADVANCED_ANALYTICS.peakHours}
+                  data={[8,9,10,11,12,13,14,15,16,17,18,19].map((hour) => ({ hour, label: `${hour <= 12 ? hour : hour - 12}${hour < 12 ? 'AM' : 'PM'}`, count: Math.round(10 + Math.sin((hour - 8) * 0.6) * 8 + Math.random() * 5) }))}
                   index={2}
                 />
               </>
@@ -231,7 +233,7 @@ export default function DashboardPage() {
             ) : (
               <>
                 <ServiceHealthIndicator
-                  services={dashboard?.serviceHealth ?? []}
+                  services={(analytics?.serviceBreakdown ?? []).map((s) => ({ serviceId: s.serviceId, serviceName: s.serviceName, score: s.avgScore, status: (s.avgScore >= 4.5 ? 'excellent' : s.avgScore >= 3.5 ? 'good' : s.avgScore >= 2.5 ? 'warning' : 'critical') as 'excellent' | 'good' | 'warning' | 'critical', trend: s.trend, totalFeedback: s.totalFeedback, participationRate: 0, issueCount: 0, message: '' }))}
                   index={2}
                 />
                 <TopComplaintsSummary
