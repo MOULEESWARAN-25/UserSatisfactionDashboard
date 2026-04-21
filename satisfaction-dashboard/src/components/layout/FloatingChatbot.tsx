@@ -11,64 +11,82 @@ interface ChatMessage {
   content: string;
 }
 
+function formatInline(text: string): React.ReactNode[] {
+  // Handles: **bold**, *italic*, `code`
+  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**"))
+      return <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>;
+    if (part.startsWith("*") && part.endsWith("*") && part.length > 2)
+      return <em key={i} className="italic">{part.slice(1, -1)}</em>;
+    if (part.startsWith("`") && part.endsWith("`"))
+      return <code key={i} className="rounded bg-muted-foreground/20 px-1 py-0.5 font-mono text-xs">{part.slice(1, -1)}</code>;
+    return part;
+  });
+}
+
 function renderMarkdown(text: string) {
-  // Split into lines
   const lines = text.split("\n");
   const elements: React.ReactNode[] = [];
+  let i = 0;
 
-  lines.forEach((line, i) => {
+  while (i < lines.length) {
+    const line = lines[i];
     const trimmed = line.trim();
+
+    // Blank line → spacing
     if (!trimmed) {
-      elements.push(<br key={`br-${i}`} />);
-      return;
+      elements.push(<div key={`sp-${i}`} className="h-1.5" />);
+      i++;
+      continue;
     }
 
-    // Bold: **text**
-    const parts = trimmed.split(/(\*\*[^*]+\*\*)/g);
-    const formattedParts = parts.map((part, j) => {
-      if (part.startsWith("**") && part.endsWith("**")) {
-        return <strong key={j} className="font-semibold">{part.slice(2, -2)}</strong>;
-      }
-      return part;
-    });
+    // Heading ## or ###
+    if (/^#{1,3}\s/.test(trimmed)) {
+      const content = trimmed.replace(/^#{1,3}\s/, "");
+      elements.push(
+        <p key={i} className="font-semibold text-sm mt-1">{formatInline(content)}</p>
+      );
+      i++;
+      continue;
+    }
 
-    // Bullet list: - item or * item
-    if (/^[-*]\s/.test(trimmed)) {
+    // Bullet list
+    if (/^[-*•]\s/.test(trimmed)) {
+      const content = trimmed.replace(/^[-*•]\s/, "");
       elements.push(
         <div key={i} className="flex gap-1.5 pl-1">
-          <span className="text-muted-foreground">•</span>
-          <span>{formattedParts.slice(0).map((p, k) =>
-            typeof p === "string" ? p.replace(/^[-*]\s/, "") : p
-          )}</span>
+          <span className="text-muted-foreground mt-0.5 shrink-0">•</span>
+          <span>{formatInline(content)}</span>
         </div>
       );
-      return;
+      i++;
+      continue;
     }
 
-    // Numbered list: 1. item
-    const numMatch = trimmed.match(/^(\d+)\.\s/);
+    // Numbered list
+    const numMatch = trimmed.match(/^(\d+)[.)]\s+(.*)/);
     if (numMatch) {
       elements.push(
         <div key={i} className="flex gap-1.5 pl-1">
-          <span className="text-muted-foreground font-medium">{numMatch[1]}.</span>
-          <span>{formattedParts.map((p, k) =>
-            typeof p === "string" ? p.replace(/^\d+\.\s/, "") : p
-          )}</span>
+          <span className="text-muted-foreground font-medium shrink-0">{numMatch[1]}.</span>
+          <span>{formatInline(numMatch[2])}</span>
         </div>
       );
-      return;
+      i++;
+      continue;
     }
 
-    // Normal paragraph
+    // Normal text
     elements.push(
-      <p key={i} className={i > 0 ? "mt-1" : ""}>
-        {formattedParts}
-      </p>
+      <p key={i} className="leading-snug">{formatInline(trimmed)}</p>
     );
-  });
+    i++;
+  }
 
-  return <div className="space-y-0.5">{elements}</div>;
+  return <div className="space-y-1">{elements}</div>;
 }
+
 
 export function FloatingChatbot() {
   const [isOpen, setIsOpen] = useState(false);

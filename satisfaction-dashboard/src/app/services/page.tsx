@@ -1,6 +1,6 @@
 "use client";
 
-import { type ComponentType, useState } from "react";
+import { type ComponentType, useState, useEffect, useCallback } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import {
   Card,
@@ -15,7 +15,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { SERVICES } from "@/lib/constants";
-import { MOCK_FEEDBACK } from "@/lib/mock-data";
 import { AdminOnly } from "@/components/auth/ProtectedRoute";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -427,41 +426,57 @@ function AddModal({ onClose, onAdd }: AddModalProps) {
 
 // ── Main Page ─────────────────────────────────────────────────────────
 export default function ServicesPage() {
-  const [services, setServices] = useState<Service[]>(SERVICES as Service[]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [loadingServices, setLoadingServices] = useState(true);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [showAdd, setShowAdd] = useState(false);
 
-  const handleSave = (updated: Service) => {
+  const fetchServices = useCallback(async () => {
+    setLoadingServices(true);
+    const res = await fetch("/api/services").catch(() => null);
+    if (res?.ok) {
+      const data = await res.json();
+      setServices(data.services ?? []);
+    } else {
+      // Fallback to hardcoded defaults if API fails
+      setServices(SERVICES as Service[]);
+    }
+    setLoadingServices(false);
+  }, []);
+
+  useEffect(() => { fetchServices(); }, [fetchServices]);
+
+  const handleSave = async (updated: Service) => {
+    await fetch("/api/services", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(updated),
+    });
     setServices((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
     setEditingService(null);
   };
 
-  const handleAdd = (newService: Service) => {
-    setServices((prev) => [...prev, newService]);
+  const handleAdd = async (newService: Service) => {
+    const res = await fetch("/api/services", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newService),
+    });
+    if (res.ok) {
+      setServices((prev) => [...prev, newService]);
+    }
     setShowAdd(false);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
+    await fetch(`/api/services?id=${encodeURIComponent(id)}`, { method: "DELETE" });
     setServices((prev) => prev.filter((s) => s.id !== id));
   };
 
-  const getServiceFeedbackStats = (serviceId: string) => {
-    const serviceFeedback = MOCK_FEEDBACK.filter((f) => f.serviceId === serviceId);
-    const lastDate = serviceFeedback
-      .map((f) => new Date(f.submittedAt).getTime())
-      .sort((a, b) => b - a)[0];
-
-    return {
-      totalFeedback: serviceFeedback.length,
-      lastFeedbackDate: lastDate
-        ? new Date(lastDate).toLocaleDateString(undefined, {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          })
-        : "No feedback yet",
-    };
-  };
+  const getServiceFeedbackStats = (_serviceId: string) => ({
+    totalFeedback: 0,
+    lastFeedbackDate: "Check analytics",
+  });
 
   return (
     <AdminOnly>
