@@ -241,10 +241,4 @@ Test MongoDB connection status.
 | `NEXT_PUBLIC_USE_MOCK_DATA` | No | Set to `false` to use MongoDB (default: mock) |
 | `GROQ_API_KEY` | Yes (for chatbot) | Groq API key for AI assistant |
 
-## Seeder
-
-Seed the database with 150+ sample feedback records:
-
-```bash
-node scripts/seed.mjs
 ```
