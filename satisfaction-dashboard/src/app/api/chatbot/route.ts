@@ -1,36 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
+import { connectDB } from "@/lib/mongodb";
+import mongoose from "mongoose";
 
 export const dynamic = "force-dynamic";
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
-const SYSTEM_PROMPT = `You are SatisfyIQ Assistant — a helpful, concise AI assistant for the SatisfyIQ Student Satisfaction Dashboard at Bannari Amman Institute of Technology (BIT Sathy), Erode, Tamil Nadu, India.
+function generateSystemPrompt(metrics: any) {
+  return `You are SatisfyIQ Assistant — a helpful, concise AI assistant for the SatisfyIQ Student Satisfaction Dashboard at Bannari Amman Institute of Technology (BIT Sathy), Erode, Tamil Nadu, India.
 
 PLATFORM OVERVIEW:
-SatisfyIQ is a centralized feedback management system that helps BIT Sathy monitor and improve the quality of campus services. It collects student feedback, generates analytics, and provides actionable insights to administrators.
+SatisfyIQ is a centralized feedback management system that helps BIT Sathy monitor and improve the quality of campus services. 
+
+CURRENT REAL-TIME DASHBOARD STATISTICS:
+- Total Feedback Collected: ${metrics.totalFeedback}
+- Overall Average Satisfaction: ${metrics.avgSatisfaction.toFixed(2)} out of 5
+- Active Critical Issues: ${metrics.criticalIssues}
 
 SERVICES TRACKED (5 categories):
-1. **Cafeteria** — Food Quality, Hygiene & Cleanliness, Staff Behavior, Waiting Time, Menu Variety
-2. **Library** — Book Availability, Quietness, Seating Space, Staff Support
-3. **Online Course Portal** — Content Quality, Platform Usability, Instructor Support, Video Quality
-4. **Hostel** — Room Cleanliness, Facilities, Security, Warden Support, WiFi Connectivity
-5. **Campus Events** — Organization, Content Relevance, Venue Quality, Timing & Schedule
+1. **Cafeteria**
+2. **Library**
+3. **Online Course Portal**
+4. **Hostel**
+5. **Campus Events**
 
 USER ROLES:
 - **Students** can submit feedback (1–5 star ratings + optional comments) for any service, view their past submissions, and optionally submit anonymously
 - **College Admins** access the full dashboard with analytics, service health monitoring, reports, and settings
 
-DASHBOARD SECTIONS (Admin):
-- **Dashboard** — KPI cards (total feedback, avg. satisfaction, weekly responses, top service), satisfaction trend line chart, feedback volume line chart, peak hours bar chart
-- **Analytics** — Service comparison horizontal bar chart, rating distribution donut chart, improvement areas, sentiment analysis, detailed service scorecards
-- **Services** — Individual service pages with per-question breakdowns and detected issues
-- **Reports** — Monthly/weekly summary reports with print/export functionality
-- **Feedback** — Browse and filter all submitted feedback with full text comments
-- **Settings** — Institution profile, satisfaction alert threshold, anonymous feedback toggle, thank-you message toggle
-
 HOW TO SUBMIT FEEDBACK:
-1. Log in as a Student (e.g., STU2024001 / student123)
+1. Log in as a Student
 2. Click "Submit Feedback" in the sidebar
 3. Select a service (Cafeteria, Library, etc.)
 4. Rate each question from 1 to 5 stars
@@ -41,13 +41,12 @@ HOW TO SUBMIT FEEDBACK:
 RESPONSE GUIDELINES:
 - Be concise: 2–4 sentences max for most questions
 - Be helpful and friendly in tone
-- If asked about specific data or scores, explain what section to check rather than making up numbers
+- You have access to real-time statistics shown above, use them if asked about current platform status.
 - For technical issues, suggest refreshing the page or contacting the admin
-- You can answer about BIT Sathy campus life, the feedback process, dashboard features, and general questions
+- Answer about BIT Sathy campus life, the feedback process, and general questions
 - Do NOT reveal internal implementation details, database schemas, or API endpoints
 - Respond in English by default, but you may greet in Tamil if the user writes in Tamil`;
-
-
+}
 
 interface ChatMessage {
   role: "user" | "assistant";
@@ -72,9 +71,40 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Message is required" }, { status: 400 });
     }
 
+    // Fetch dynamic context from MongoDB
+    let dbMetrics = { totalFeedback: 0, avgSatisfaction: 0, criticalIssues: 0 };
+    try {
+      await connectDB();
+      const Feedback = mongoose.models.Feedback ?? mongoose.model("Feedback", new mongoose.Schema({}));
+      
+      const [stats] = await Feedback.aggregate([
+        { 
+          $group: { 
+            _id: null, 
+            total: { $sum: 1 }, 
+            avg: { $avg: "$overallSatisfaction" },
+            critical: { 
+              $sum: { $cond: [{ $lte: ["$overallSatisfaction", 2] }, 1, 0] } 
+            }
+          } 
+        }
+      ]);
+      
+      if (stats) {
+        dbMetrics = {
+          totalFeedback: stats.total || 0,
+          avgSatisfaction: stats.avg || 0,
+          criticalIssues: stats.critical || 0
+        };
+      }
+    } catch (e) {
+      console.error("Failed to fetch dynamic stats for chatbot:", e);
+      // Fail gracefully and just use default zeros so the chat doesn't break
+    }
+
     // Build conversation messages
     const messages = [
-      { role: "system" as const, content: SYSTEM_PROMPT },
+      { role: "system" as const, content: generateSystemPrompt(dbMetrics) },
       ...(history ?? []).slice(-8).map((m: ChatMessage) => ({
         role: m.role as "user" | "assistant",
         content: m.content,
@@ -117,3 +147,4 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
