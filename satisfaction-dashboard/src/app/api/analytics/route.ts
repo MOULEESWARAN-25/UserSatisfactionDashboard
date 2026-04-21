@@ -183,7 +183,7 @@ export async function GET(req: NextRequest) {
       })
     );
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       metrics: {
         totalFeedback: metrics?.totalFeedback ?? 0,
         avgSatisfaction: metrics?.avgSatisfaction ?? 0,
@@ -197,6 +197,8 @@ export async function GET(req: NextRequest) {
       ratingDistribution: fullDist,
       serviceBreakdown,
     });
+    response.headers.set("Cache-Control", "s-maxage=300, stale-while-revalidate=60");
+    return response;
   } catch (err) {
     console.error("Analytics API Error:", err);
     const errorMessage = err instanceof Error ? err.message : "Unknown error";

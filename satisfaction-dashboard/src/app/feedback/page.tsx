@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ServiceFilter } from "@/components/dashboard/ServiceFilter";
 import {
@@ -21,6 +21,7 @@ import { AdminOnly } from "@/components/auth/ProtectedRoute";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 
+import { useFeedback } from "@/lib/api-hooks";
 
 const PAGE_SIZE = 8;
 
@@ -34,8 +35,7 @@ const SCORE_FILTERS = [
 
 export default function FeedbackPage() {
   const [selected, setSelected] = useState("all");
-  const [allFeedback, setAllFeedback] = useState<FeedbackRecord[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { data: allFeedback = [], isLoading: loading } = useFeedback(selected, 200);
   const [search, setSearch] = useState("");
   const [scoreFilter, setScoreFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
@@ -51,17 +51,6 @@ export default function FeedbackPage() {
     if (comment.includes("time") || comment.includes("wait") || comment.includes("delay")) return "Timeliness";
     return "General";
   };
-
-  useEffect(() => {
-    setLoading(true);
-    setPage(1);
-    const params = selected !== "all" ? `?serviceId=${selected}&limit=100` : "?limit=100";
-    fetch(`/api/feedback${params}`)
-      .then((r) => r.json())
-      .then((d) => setAllFeedback(d.feedback ?? []))
-      .catch(() => setAllFeedback([]))
-      .finally(() => setLoading(false));
-  }, [selected]);
 
   // Apply search + score filter
   const filtered = useMemo(() => {

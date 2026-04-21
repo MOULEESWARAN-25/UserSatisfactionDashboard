@@ -113,7 +113,9 @@ export async function GET(req: NextRequest) {
       .limit(limit)
       .lean();
 
-    return NextResponse.json({ feedback: docs });
+    const response = NextResponse.json({ feedback: docs });
+    response.headers.set("Cache-Control", "s-maxage=60, stale-while-revalidate=30");
+    return response;
   } catch (err) {
     console.error("Feedback GET Error:", err);
     const errorMessage = err instanceof Error ? err.message : "Unknown error";

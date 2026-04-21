@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import { ServiceFilter } from "@/components/dashboard/ServiceFilter";
 import { ServiceComparisonChart } from "@/components/charts/ServiceComparisonChart";
@@ -13,23 +13,11 @@ import { Users, BarChart3, Award, AlertTriangle, TrendingDown } from "lucide-rea
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import type { AnalyticsDashboard } from "@/types/analytics";
+import { useAnalytics } from "@/lib/api-hooks";
 
 export default function AnalyticsPage() {
   const [selected, setSelected] = useState("all");
-  const [analytics, setAnalytics] = useState<AnalyticsDashboard | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setLoading(true);
-    const params = selected !== "all" ? `?serviceId=${selected}` : "";
-    fetch(`/api/analytics${params}`)
-      .then((r) => r.json())
-      .then((data) => {
-        setAnalytics(data);
-      })
-      .catch(() => null)
-      .finally(() => setLoading(false));
-  }, [selected]);
+  const { data: analytics = null, isLoading: loading } = useAnalytics(selected);
 
   // Derive advanced analytics from real API data
   const advancedAnalytics = (() => {

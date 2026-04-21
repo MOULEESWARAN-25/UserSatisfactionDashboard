@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { MessageSquare, Star, TrendingUp, Users, AlertCircle, CheckCircle2, Clock, Search, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { staggerContainer, staggerItem } from "@/lib/animations";
@@ -18,9 +18,9 @@ import { AdminOnly } from "@/components/auth/ProtectedRoute";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { EnhancedDashboard, AnalyticsDashboard } from "@/types/analytics";
-import type { FeedbackRecord } from "@/types/feedback";
+import type { AnalyticsDashboard } from "@/types/analytics";
 import { formatScore, cn } from "@/lib/utils";
+import { useAnalytics, useRecentFeedback } from "@/lib/api-hooks";
 
 const statusConfig: Record<string, { icon: typeof AlertCircle; color: string; bg: string; label: string }> = {
   open: { icon: AlertCircle, color: "text-rose-600", bg: "bg-rose-50 dark:bg-rose-950/50", label: "Open" },
@@ -37,21 +37,9 @@ const severityBadge: Record<string, string> = {
 };
 
 export default function DashboardPage() {
-  const [dashboard, setDashboard] = useState<EnhancedDashboard | null>(null);
-  const [analytics, setAnalytics] = useState<AnalyticsDashboard | null>(null);
-  const [recentFeedback, setRecentFeedback] = useState<FeedbackRecord[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setLoading(true);
-    Promise.all([
-      fetch("/api/analytics").then((r) => r.json()).catch(() => null),
-      fetch("/api/feedback?limit=5").then((r) => r.json()).catch(() => ({ feedback: [] })),
-    ]).then(([analyticsData, feedbackData]) => {
-      if (analyticsData) setAnalytics(analyticsData);
-      setRecentFeedback(feedbackData?.feedback ?? []);
-    }).finally(() => setLoading(false));
-  }, []);
+  const { data: analytics, isLoading: loadingAnalytics } = useAnalytics();
+  const { data: recentFeedback = [], isLoading: loadingFeedback } = useRecentFeedback(5);
+  const loading = loadingAnalytics || loadingFeedback;
 
   const participationRate = 0;
   const criticalIssues: any[] = [];
@@ -83,16 +71,16 @@ export default function DashboardPage() {
               <>
                 <MetricCard
                   title="Total Feedback"
-                  value={dashboard?.metrics.totalFeedback ?? 0}
-                  delta={dashboard?.metrics.totalFeedbackDelta}
+                  value={analytics?.metrics?.totalFeedback ?? 0}
+                  delta={analytics?.metrics?.totalFeedbackDelta}
                   description="from last month"
                   icon={MessageSquare}
                   index={0}
                 />
                 <MetricCard
                   title="Avg Satisfaction"
-                  value={`${formatScore(dashboard?.metrics.avgSatisfaction ?? 0)} / 5`}
-                  delta={dashboard?.metrics.avgSatisfactionDelta}
+                  value={`${formatScore(analytics?.metrics?.avgSatisfaction ?? 0)} / 5`}
+                  delta={analytics?.metrics?.avgSatisfactionDelta}
                   description="overall score"
                   icon={Star}
                   index={1}
@@ -100,7 +88,7 @@ export default function DashboardPage() {
                 <MetricCard
                   title="Participation"
                   value={`${participationRate.toFixed(1)}%`}
-                  description={`${dashboard?.participation?.uniqueRespondents ?? 0} of ${dashboard?.participation?.totalStudents ?? 0} students`}
+                  description={`${analytics?.metrics?.weeklyResponses ?? 0} responses this week`}
                   icon={Users}
                   index={2}
                 />
@@ -212,7 +200,7 @@ export default function DashboardPage() {
             ) : (
               <>
                 <FeedbackGrowthChart
-                  data={dashboard?.trends ?? []}
+                  data={analytics?.trends ?? []}
                   index={1}
                 />
                 <PeakHoursChart
@@ -237,7 +225,7 @@ export default function DashboardPage() {
                   index={2}
                 />
                 <TopComplaintsSummary
-                  complaints={(dashboard?.topComplaints ?? []).slice(0, 4)}
+                  complaints={[]}
                   index={3}
                 />
               </>
@@ -250,7 +238,7 @@ export default function DashboardPage() {
               <Skeleton className="h-80 rounded-xl" />
             ) : (
               <DepartmentPerformanceWidget
-                departments={dashboard?.departmentPerformance ?? []}
+                departments={[]}
                 index={5}
               />
             )}

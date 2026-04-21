@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { MessageSquare, Star, EyeOff } from "lucide-react";
 import { AppShell } from "@/components/layout/AppShell";
 import { StudentOnly } from "@/components/auth/ProtectedRoute";
@@ -9,24 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/lib/auth-context";
 import { formatDate } from "@/lib/utils";
-
+import { useMyFeedback } from "@/lib/api-hooks";
 import type { FeedbackRecord } from "@/types/feedback";
 
 export default function MyFeedbackPage() {
   const { user } = useAuth();
-  const [loading, setLoading] = useState(true);
-  const [records, setRecords] = useState<FeedbackRecord[]>([]);
-
-  useEffect(() => {
-    if (!user?.id) return;
-
-    setLoading(true);
-    fetch(`/api/feedback?studentId=${encodeURIComponent(user.id)}&limit=100`)
-      .then((r) => r.json())
-      .then((d) => setRecords(d.feedback ?? []))
-      .catch(() => setRecords([]))
-      .finally(() => setLoading(false));
-  }, [user?.id]);
+  const { data: records = [], isLoading: loading } = useMyFeedback(user?.id);
 
   const averageScore = useMemo(() => {
     if (records.length === 0) return 0;
