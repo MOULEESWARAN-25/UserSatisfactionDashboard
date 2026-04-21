@@ -1,5 +1,7 @@
 "use client";
 
+import { useQueryClient } from "@tanstack/react-query";
+
 import { type ComponentType, useState, useEffect, useCallback } from "react";
 import { AppShell } from "@/components/layout/AppShell";
 import {
@@ -426,6 +428,7 @@ function AddModal({ onClose, onAdd }: AddModalProps) {
 
 // ── Main Page ─────────────────────────────────────────────────────────
 export default function ServicesPage() {
+  const queryClient = useQueryClient();
   const [services, setServices] = useState<Service[]>([]);
   const [loadingServices, setLoadingServices] = useState(true);
   const [editingService, setEditingService] = useState<Service | null>(null);
@@ -454,6 +457,8 @@ export default function ServicesPage() {
     });
     setServices((prev) => prev.map((s) => (s.id === updated.id ? updated : s)));
     setEditingService(null);
+    queryClient.invalidateQueries({ queryKey: ["services"] });
+    queryClient.invalidateQueries({ queryKey: ["analytics"] });
   };
 
   const handleAdd = async (newService: Service) => {
@@ -464,6 +469,8 @@ export default function ServicesPage() {
     });
     if (res.ok) {
       setServices((prev) => [...prev, newService]);
+      queryClient.invalidateQueries({ queryKey: ["services"] });
+      queryClient.invalidateQueries({ queryKey: ["analytics"] });
     }
     setShowAdd(false);
   };
@@ -471,6 +478,8 @@ export default function ServicesPage() {
   const handleDelete = async (id: string) => {
     await fetch(`/api/services?id=${encodeURIComponent(id)}`, { method: "DELETE" });
     setServices((prev) => prev.filter((s) => s.id !== id));
+    queryClient.invalidateQueries({ queryKey: ["services"] });
+    queryClient.invalidateQueries({ queryKey: ["analytics"] });
   };
 
   const getServiceFeedbackStats = (_serviceId: string) => ({

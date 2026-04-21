@@ -1,6 +1,5 @@
 "use client";
 
-import { SERVICES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,28 +8,47 @@ import {
   Monitor,
   Building2,
   Calendar,
-  LucideIcon,
+  School,
+  type LucideIcon,
+  Briefcase,
+  Coffee,
+  Globe,
+  Settings,
+  Shield,
+  Wifi,
 } from "lucide-react";
 import type { ServiceId } from "@/types/feedback";
 
 interface ServiceSelectorProps {
   selected: ServiceId | null;
   onChange: (id: ServiceId) => void;
+  services: any[];
 }
 
-const SERVICE_ICONS: Record<ServiceId, LucideIcon> = {
+// Fallback icon map for dynamic services
+const DYNAMIC_ICONS: Record<string, LucideIcon> = {
   cafeteria: UtensilsCrossed,
   library: BookOpen,
   "online-course": Monitor,
   hostel: Building2,
   "campus-event": Calendar,
+  school: School,
+  briefcase: Briefcase,
+  coffee: Coffee,
+  globe: Globe,
+  settings: Settings,
+  shield: Shield,
+  wifi: Wifi,
 };
 
-export function ServiceSelector({ selected, onChange }: ServiceSelectorProps) {
+export function ServiceSelector({ selected, onChange, services }: ServiceSelectorProps) {
+  if (!services || services.length === 0) return null;
+
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-      {SERVICES.map((service) => {
-        const Icon = SERVICE_ICONS[service.id];
+      {services.map((service) => {
+        // Fallback to School icon if string ID doesn't match
+        const Icon = DYNAMIC_ICONS[service.id] || DYNAMIC_ICONS[service.icon] || School;
         const isSelected = selected === service.id;
 
         return (

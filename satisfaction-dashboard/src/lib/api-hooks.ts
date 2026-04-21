@@ -64,3 +64,18 @@ export function useMyFeedback(studentId: string | undefined) {
     enabled: !!studentId,
   });
 }
+
+/** Fetch services dynamically */
+async function fetchServices() {
+  const res = await fetch("/api/services");
+  if (!res.ok) throw new Error("Failed to fetch services");
+  const data = await res.json();
+  return data.services ?? [];
+}
+
+export function useServices() {
+  return useQuery({
+    queryKey: ["services"],
+    queryFn: fetchServices,
+  });
+}

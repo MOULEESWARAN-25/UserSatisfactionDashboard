@@ -17,14 +17,18 @@ import {
   Card,
   CardContent,
 } from "@/components/ui/card";
-import { SERVICES } from "@/lib/constants";
 import { useAuth } from "@/lib/auth-context";
 import type { ServiceId } from "@/types/feedback";
 import { motion, AnimatePresence } from "framer-motion";
+import { useQueryClient } from "@tanstack/react-query";
+import { useServices } from "@/lib/api-hooks";
 
 export function FeedbackForm() {
   const router = useRouter();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const { data: services = [] } = useServices();
+  
   const [selectedService, setSelectedService] = useState<ServiceId | null>(null);
   const [ratings, setRatings] = useState<Record<string, number>>({});
   const [overallSatisfaction, setOverallSatisfaction] = useState(0);
@@ -33,12 +37,13 @@ export function FeedbackForm() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const service = SERVICES.find((s) => s.id === selectedService);
+  // Use dynamically loaded services
+  const service = services.find((s: any) => s.id === selectedService);
 
   const ratedQuestions = service
-    ? service.questions.filter((q) => (ratings[q.id] ?? 0) > 0).length
+    ? service.questions?.filter((q: any) => (ratings[q.id] ?? 0) > 0).length ?? 0
     : 0;
-  const totalQuestions = service ? service.questions.length : 0;
+  const totalQuestions = service?.questions?.length ?? 0;
   
   const isValid = selectedService !== null && 
                   ratedQuestions === totalQuestions && 
@@ -72,6 +77,11 @@ export function FeedbackForm() {
         setError(data.error || "Failed to submit feedback. Please try again.");
         return;
       }
+      
+      // Invalidate caches so the dashboard picks up the new feedback instantly
+      queryClient.invalidateQueries({ queryKey: ["feedback"] });
+      queryClient.invalidateQueries({ queryKey: ["analytics"] });
+      
       setSubmitted(true);
     } catch (e) {
       console.error(e);
@@ -140,6 +150,7 @@ export function FeedbackForm() {
         <ServiceSelector
           selected={selectedService}
           onChange={setSelectedService}
+          services={services}
         />
       </div>
 
@@ -159,7 +170,7 @@ export function FeedbackForm() {
               </div>
               
               <div className="divide-y divide-border/50 overflow-hidden rounded-xl border bg-card">
-                {service.questions.map((q) => (
+                {service.questions?.map((q: any) => (
                   <div key={q.id} className="p-4 sm:px-6">
                     <RatingInput
                       label={q.label}

@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
-function generateSystemPrompt(metrics: any) {
+function generateSystemPrompt(metrics: any, servicesList: string) {
   return `You are SatisfyIQ Assistant — a helpful, concise AI assistant for the SatisfyIQ Student Satisfaction Dashboard at Bannari Amman Institute of Technology (BIT Sathy), Erode, Tamil Nadu, India.
 
 PLATFORM OVERVIEW:
@@ -18,12 +18,8 @@ CURRENT REAL-TIME DASHBOARD STATISTICS:
 - Overall Average Satisfaction: ${metrics.avgSatisfaction.toFixed(2)} out of 5
 - Active Critical Issues: ${metrics.criticalIssues}
 
-SERVICES TRACKED (5 categories):
-1. **Cafeteria**
-2. **Library**
-3. **Online Course Portal**
-4. **Hostel**
-5. **Campus Events**
+SERVICES TRACKED (Dynamic based on DB):
+${servicesList}
 
 USER ROLES:
 - **Students** can submit feedback (1–5 star ratings + optional comments) for any service, view their past submissions, and optionally submit anonymously
@@ -32,7 +28,7 @@ USER ROLES:
 HOW TO SUBMIT FEEDBACK:
 1. Log in as a Student
 2. Click "Submit Feedback" in the sidebar
-3. Select a service (Cafeteria, Library, etc.)
+3. Select a service
 4. Rate each question from 1 to 5 stars
 5. Add an overall satisfaction rating
 6. Optionally write a comment
@@ -73,9 +69,11 @@ export async function POST(req: NextRequest) {
 
     // Fetch dynamic context from MongoDB
     let dbMetrics = { totalFeedback: 0, avgSatisfaction: 0, criticalIssues: 0 };
+    let dynamicServicesString = "1. Cafeteria\n2. Library\n3. Hostel"; // default fallback
     try {
       await connectDB();
       const Feedback = mongoose.models.Feedback ?? mongoose.model("Feedback", new mongoose.Schema({}));
+      const Service = mongoose.models.Service ?? mongoose.model("Service", new mongoose.Schema({ isActive: Boolean, name: String, id: String }));
       
       const [stats] = await Feedback.aggregate([
         { 
@@ -97,6 +95,12 @@ export async function POST(req: NextRequest) {
           criticalIssues: stats.critical || 0
         };
       }
+
+      // Fetch dynamic services
+      const activeServices = await Service.find({ isActive: true }).lean();
+      if (activeServices && activeServices.length > 0) {
+        dynamicServicesString = activeServices.map((s: any, idx: number) => `${idx + 1}. **${s.name ?? s.id}**`).join("\n");
+      }
     } catch (e) {
       console.error("Failed to fetch dynamic stats for chatbot:", e);
       // Fail gracefully and just use default zeros so the chat doesn't break
@@ -104,7 +108,7 @@ export async function POST(req: NextRequest) {
 
     // Build conversation messages
     const messages = [
-      { role: "system" as const, content: generateSystemPrompt(dbMetrics) },
+      { role: "system" as const, content: generateSystemPrompt(dbMetrics, dynamicServicesString) },
       ...(history ?? []).slice(-8).map((m: ChatMessage) => ({
         role: m.role as "user" | "assistant",
         content: m.content,
