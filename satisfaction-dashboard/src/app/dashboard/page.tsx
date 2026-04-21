@@ -41,8 +41,12 @@ export default function DashboardPage() {
   const { data: recentFeedback = [], isLoading: loadingFeedback } = useRecentFeedback(5);
   const loading = loadingAnalytics || loadingFeedback;
 
-  const participationRate = 0;
-  const criticalIssues: any[] = [];
+  const participationRate = analytics?.metrics?.weeklyResponses 
+    ? (analytics.metrics.weeklyResponses / 2000) * 100 // Assume 2000 students base
+    : 0;
+    
+  const detectedIssues = (analytics as unknown as Record<string, any>)?.detectedIssues || [];
+  const criticalIssues = detectedIssues.filter((i: any) => i.severity === 'critical');
   const serviceHealth = analytics?.serviceBreakdown ?? [];
   const healthSummary = {
     healthy: serviceHealth.filter((s) => (s.avgScore ?? 0) >= 4).length,
@@ -155,7 +159,7 @@ export default function DashboardPage() {
                           <p className="text-xs text-muted-foreground">No issues detected</p>
                         </div>
                       ) : (
-                        criticalIssues.map((issue, idx) => {
+                        criticalIssues.map((issue: any, idx: number) => {
                           const cfg = statusConfig[issue.status] ?? statusConfig.open;
                           const StatusIcon = cfg.icon;
                           return (

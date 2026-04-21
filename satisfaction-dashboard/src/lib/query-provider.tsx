@@ -9,11 +9,11 @@ export function QueryProvider({ children }: { children: ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 5 * 60 * 1000,      // 5 minutes — data treated as fresh
-            gcTime: 30 * 60 * 1000,          // 30 minutes — kept in memory
+            staleTime: 0,                   // 0 -> always fetch when mounting and window focuses
+            gcTime: 30 * 60 * 1000,         // keep in memory for 30mins
             retry: 1,
-            refetchOnWindowFocus: false,      // don't refetch just because user switches tabs
-            refetchOnMount: false,            // don't refetch if data is still fresh
+            refetchOnWindowFocus: true,     // refresh when returning to tab
+            refetchOnMount: true,           // refresh when navigating between pages
           },
         },
       })
